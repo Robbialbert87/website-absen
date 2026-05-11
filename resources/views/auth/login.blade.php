@@ -97,6 +97,7 @@
             width: 250px;
             object-fit: contain;
         }
+        
 
         .brand-logo span {
             color: var(--accent);
