@@ -376,10 +376,27 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/templatemo-622-clearwave.js') }}"></script>
     <script>
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-    </script>
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    // Toggle sidebar
+    sidebarToggle?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        sidebar.classList.toggle('active');
+    });
+
+    // Prevent click inside sidebar from closing it
+    sidebar.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', function() {
+        if (window.innerWidth <= 992 && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+        }
+    });
+</script>
     @stack('scripts')
 </body>
 
