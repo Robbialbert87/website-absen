@@ -460,6 +460,8 @@
                 calendar.destroy();
             }
 
+            const eventsUrl = '{{ url('jadwal/events') }}';
+
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'id',
@@ -468,7 +470,7 @@
                     center: 'title',
                     right: 'dayGridMonth,dayGridWeek'
                 },
-                events: `/jadwal/events/${currentPegawaiId}`,
+                events: eventsUrl + '/' + currentPegawaiId,
                 editable: false,
                 selectable: true,
                 dateClick: function(info) {
