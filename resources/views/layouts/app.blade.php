@@ -264,6 +264,10 @@
                 class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift')) ? 'active' : '' }}">
                 <i class="fas fa-file-alt"></i> Report Jadwal Non Shift
             </a>
+            <a href="{{ route('cuti.index') }}"
+                class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
+                <i class="fas fa-user-clock"></i> Data Cuti
+            </a>
         @endif
 
         <div class="sidebar-section-title">Operasional</div>

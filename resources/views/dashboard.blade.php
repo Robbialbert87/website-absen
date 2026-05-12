@@ -64,13 +64,22 @@
                     </div>
                     <div class="row text-center mt-3">
                         <div class="col-6 border-end">
-                            <div class="text-muted small mb-1">Hari Ini</div>
-                            <h4 class="mb-0 fw-bold" style="color: #0D1E1C;">{{ $stats['total_cuti_hari_ini'] }} <small class="text-muted fw-normal" style="font-size: 0.8rem;">Orang</small></h4>
+                            <a href="{{ route('cuti.index', ['bulan' => date('m'), 'tahun' => date('Y')]) }}" class="text-decoration-none">
+                                <div class="text-muted small mb-1">Hari Ini</div>
+                                <h4 class="mb-0 fw-bold" style="color: #0D1E1C;">{{ $stats['total_cuti_hari_ini'] }} <small class="text-muted fw-normal" style="font-size: 0.8rem;">Orang</small></h4>
+                            </a>
                         </div>
                         <div class="col-6">
-                            <div class="text-muted small mb-1">Bulan Ini</div>
-                            <h4 class="mb-0 fw-bold" style="color: #0D1E1C;">{{ $stats['total_cuti_bulan_ini'] }} <small class="text-muted fw-normal" style="font-size: 0.8rem;">Orang</small></h4>
+                            <a href="{{ route('cuti.index', ['bulan' => date('m'), 'tahun' => date('Y')]) }}" class="text-decoration-none">
+                                <div class="text-muted small mb-1">Bulan Ini</div>
+                                <h4 class="mb-0 fw-bold" style="color: #0D1E1C;">{{ $stats['total_cuti_bulan_ini'] }} <small class="text-muted fw-normal" style="font-size: 0.8rem;">Orang</small></h4>
+                            </a>
                         </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ route('cuti.index') }}" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #e74c3c; font-size: 0.85rem;">
+                            Selengkapnya <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                        </a>
                     </div>
                 </div>
             </div>

@@ -12,7 +12,7 @@ class PegawaiController extends Controller
     public function index(Request $request, \App\Filters\PegawaiFilter $filters)
     {
         $user = auth()->user();
-        $query = Pegawai::with(['ruangan', 'jadwal'])->filter($filters);
+        $query = Pegawai::with(['ruangan'])->filter($filters);
 
         // Filter for non-admin roles
         if (! $user->hasAnyRole(['super_admin', 'admin'])) {

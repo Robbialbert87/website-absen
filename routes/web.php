@@ -12,6 +12,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\JadwalPegawaiController;
 use App\Http\Controllers\ImportRuanganController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DataCutiController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -61,6 +62,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/jadwal', [JadwalPegawaiController::class, 'index'])->name('jadwal.index');
         Route::get('/jadwal/create', [JadwalPegawaiController::class, 'create'])->name('jadwal.create');
         Route::post('/jadwal', [JadwalPegawaiController::class, 'store'])->name('jadwal.store');
+        
+        // AJAX Routes for Calendar
+        Route::get('/jadwal/events/{pegawai_id}', [JadwalPegawaiController::class, 'getEvents'])->name('jadwal.events');
+        Route::post('/jadwal/save-single', [JadwalPegawaiController::class, 'saveSingle'])->name('jadwal.save-single');
+        Route::delete('/jadwal/delete-single', [JadwalPegawaiController::class, 'deleteSingle'])->name('jadwal.delete-single');
+        Route::post('/jadwal/auto-fill', [JadwalPegawaiController::class, 'autoFill'])->name('jadwal.auto-fill');
+        Route::post('/jadwal/reset', [JadwalPegawaiController::class, 'resetJadwal'])->name('jadwal.reset');
     });
 
     // Reports
@@ -73,4 +81,8 @@ Route::middleware(['auth'])->group(function () {
 
     // User/General Routes
     Route::get('/view-pegawai', [PegawaiController::class, 'index'])->name('pegawai.view');
+
+    // Data Cuti Detail
+    Route::get('/data-cuti', [DataCutiController::class, 'index'])->name('cuti.index');
+    Route::get('/data-cuti/export', [DataCutiController::class, 'export'])->name('cuti.export');
 });

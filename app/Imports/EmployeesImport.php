@@ -17,6 +17,9 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
     */
     public function model(array $row)
     {
+        // Clean NIP from non-breaking spaces and trim
+        $nip = trim(str_replace(["\xc2\xa0", "\xa0"], '', $row['nip']));
+
         // 1. Get or Create Ruangan
         $ruangan = Ruangan::firstOrCreate(
             ['kode_ruangan' => strtoupper($row['ruangan'])],
@@ -25,7 +28,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
 
         // 2. Upsert Pegawai by NIP
         return Pegawai::updateOrCreate(
-            ['nip' => $row['nip']],
+            ['nip' => $nip],
             [
                 'nama' => $row['nama'],
                 'ruangan_id' => $ruangan->id,
