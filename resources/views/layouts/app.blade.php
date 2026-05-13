@@ -268,7 +268,11 @@
                 class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
                 <i class="fas fa-user-clock"></i> Data Cuti
             </a>
-        @endif
+            <a href="{{ route('monitoring.index') }}"
+                class="sidebar-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
+                <i class="fas fa-chart-line"></i> Monitoring Jadwal
+            </a>
+@endif
 
         <div class="sidebar-section-title">Operasional</div>
         @can('manage-jadwal')

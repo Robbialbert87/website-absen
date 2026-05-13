@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-5">
@@ -8,7 +7,6 @@
             <p class="text-muted mb-0">Ringkasan data sistem manajemen absensi.</p>
         </div>
     </div>
-
     <div class="row">
         <!-- Total Pegawai Card -->
         <div class="col-xl-4 col-md-6 mb-4">
@@ -29,7 +27,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Total Ruangan Card -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card p-3 border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
@@ -49,7 +46,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Pegawai Cuti Card -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card p-3 border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
@@ -85,7 +81,6 @@
             </div>
         </div>
     </div>
-
     <div class="row mt-4">
         <div class="col-lg-12">
             <div class="card border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
@@ -94,7 +89,7 @@
                 </div>
                 <div class="card-body pt-0 pb-5">
                     <p class="fs-5 text-secondary" style="line-height: 1.8;">Halo <strong>{{ auth()->user()->name }}</strong>, selamat datang kembali di sistem manajemen absensi pegawai.</p>
-                    <p class="text-muted">Gunakan panel navigasi di sebelah kiri untuk mengelola data master pegawai, ruangan, dan shift kerja dengan lebih mudah dan efisien.</p>
+                    <p class="text-muted">Gunakan panel navigasi di sebelah kiri untuk mengelola data master pegawai, ruangan, dan shift kerja dengan lebih mudah and efisien.</p>
                     <div class="mt-4">
                         <a href="{{ route('pegawai.index') }}" class="btn btn-primary px-4 py-2 me-2 text-white" style="background-color: #1A7A6E; border: none; border-radius: 100px; text-decoration: none;">Kelola Pegawai</a>
                         <a href="{{ route('jadwal.index') }}" class="btn btn-outline-secondary border px-4 py-2" style="color: #1A7A6E; border-radius: 100px; text-decoration: none;">Lihat Jadwal</a>
