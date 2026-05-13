@@ -79,6 +79,10 @@
                                 <i class="fas fa-magic"></i>
                             </button>
                         @endif
+                        <div class="form-check form-switch ms-2 mt-1">
+                            <input class="form-check-input" type="checkbox" id="toggleHolidays" checked>
+                            <label class="form-check-label small fw-bold text-muted text-uppercase" for="toggleHolidays" style="font-size: 10px;">Libur</label>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -110,9 +114,21 @@
                                     'Saturday' => 'Sab',
                                 ][$date->format('l')];
                             @endphp
-                            <th style="min-width: 45px; background-color: {{ $date->isWeekend() ? '#fff5f5' : '' }};">
+                            @php
+                                $day = $date->format('j');
+                                $holiday = $holidays[$day] ?? null;
+                                $isSunday = $date->isWeekend();
+                                $bgColor = '';
+                                if ($holiday) {
+                                    $bgColor = $holiday->jenis === 'cuti_bersama' ? '#fff9db' : '#ffe5e5';
+                                } elseif ($isSunday) {
+                                    $bgColor = '#fff5f5';
+                                }
+                            @endphp
+                            <th style="min-width: 45px; background-color: {{ $bgColor }};" 
+                                @if($holiday) data-bs-toggle="tooltip" title="{{ $holiday->nama_hari_libur }}" @endif>
                                 <span class="d-block small fw-bold">{{ $date->format('j') }}</span>
-                                <span class="d-block {{ $date->isWeekend() ? 'text-danger' : 'text-muted' }}"
+                                <span class="d-block {{ $isSunday || $holiday ? 'text-danger' : 'text-muted' }}"
                                     style="font-size: 9px;">{{ $hariId }}</span>
                             </th>
                         @endforeach
@@ -147,12 +163,22 @@
                                 @php
                                     $day = $date->format('j');
                                     $item = $jadwal[$p->id][$day][0] ?? null;
-                                    $isWeekend = $weekendMap[$day] ?? false;
-                                    $bgColor = $item && $item->shift ? $item->shift->warna : '';
-                                    $textColor = $bgColor ? '#fff' : ($isWeekend ? '#dc3545' : '#6c757d');
+                                    $holiday = $holidays[$day] ?? null;
+                                    $isSunday = $date->isWeekend();
+                                    
+                                    $cellBg = '';
+                                    if ($item && $item->shift) {
+                                        $cellBg = $item->shift->warna;
+                                    } elseif ($holiday) {
+                                        $cellBg = $holiday->jenis === 'cuti_bersama' ? '#fff9db' : '#ffe5e5';
+                                    } elseif ($isSunday) {
+                                        $cellBg = '#fff5f5';
+                                    }
+                                    
+                                    $textColor = $item && $item->shift ? '#fff' : ($isSunday || $holiday ? '#dc3545' : '#6c757d');
                                 @endphp
                                 <td class="text-center p-0"
-                                    style="height: 45px; background-color: {{ $bgColor ?: ($isWeekend ? '#fff5f5' : '') }};">
+                                    style="height: 45px; background-color: {{ $cellBg }};">
                                     @if ($item)
                                         <span class="fw-bold text-uppercase"
                                             style="font-size: 10px; color: {{ $textColor }}; cursor: pointer;"
@@ -368,6 +394,7 @@
         let calendar = null;
         let modalCalendar, modalShiftPicker;
         let hasChanged = false;
+        let showHolidays = true;
 
         function showIndividualCalendar(id, nama, kategori) {
             currentPegawaiId = id;
@@ -446,6 +473,13 @@
                 theme: 'bootstrap-5'
             });
 
+            $('#toggleHolidays').on('change', function() {
+                showHolidays = $(this).is(':checked');
+                if (calendar) {
+                    calendar.refetchEvents();
+                }
+            });
+
             $('.btn-atur-jadwal').on('click', function() {
                 const id = $(this).data('id');
                 const nama = $(this).data('nama');
@@ -460,37 +494,121 @@
                 calendar.destroy();
             }
 
-            const eventsUrl = '{{ url('jadwal/events') }}';
+            const eventsUrl  = '{{ url('jadwal/events') }}';
+            const holidayUrl = '{{ route('api.holidays') }}';
 
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'id',
                 headerToolbar: {
-                    left: 'prev,next today',
+                    left:   'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,dayGridWeek'
+                    right:  'dayGridMonth,dayGridWeek'
                 },
-                events: eventsUrl + '/' + currentPegawaiId,
-                editable: false,
+                // Two event sources: employee schedule + holidays
+                eventSources: [
+                    {
+                        // Employee schedule events
+                        url: eventsUrl + '/' + currentPegawaiId,
+                        method: 'GET',
+                    },
+                    {
+                        // Holiday background events — fetched per visible month
+                        id: 'holidays',
+                        events: function(fetchInfo, successCallback, failureCallback) {
+                            if (!showHolidays) {
+                                successCallback([]);
+                                return;
+                            }
+                            const d = new Date(fetchInfo.start);
+                            // fetchInfo.start is the first day of the visible range (could be prev month)
+                            // Use the middle of the range to get the actual month
+                            const mid = new Date((fetchInfo.start.valueOf() + fetchInfo.end.valueOf()) / 2);
+                            const year  = mid.getFullYear();
+                            const month = mid.getMonth() + 1;
+
+                            $.get(holidayUrl, { year: year, month: month })
+                                .done(function(data) { successCallback(data); })
+                                .fail(function()     { failureCallback();    });
+                        }
+                    }
+                ],
+                editable:   false,
                 selectable: true,
+                // Style the day cells that are holidays
+                dayCellDidMount: function(info) {
+                    if (info.date.getDay() === 0) { // Sunday
+                        info.el.style.backgroundColor = 'rgba(220,53,69,0.06)';
+                        info.el.querySelector('.fc-daygrid-day-number').style.color = '#dc3545';
+                    }
+                },
+                eventDidMount: function(info) {
+                    if (info.event.extendedProps.is_holiday) {
+                        // Add Bootstrap Tooltip
+                        $(info.el).attr('data-bs-toggle', 'tooltip')
+                                 .attr('data-bs-placement', 'top')
+                                 .attr('title', info.event.extendedProps.label);
+                        
+                        new bootstrap.Tooltip(info.el);
+
+                        info.el.style.opacity = '1'; // Keep background visible but soft via RGBA
+                        
+                        // Also colour the day number
+                        const dayEl = info.el.closest('.fc-daygrid-day');
+                        if (dayEl) {
+                            const numEl = dayEl.querySelector('.fc-daygrid-day-number');
+                            if (numEl) {
+                                numEl.style.color = '#dc3545';
+                                $(numEl).attr('title', info.event.extendedProps.label);
+                            }
+                            
+                            // Small label under the date number
+                            if (!dayEl.querySelector('.holiday-label')) {
+                                const lbl = document.createElement('div');
+                                lbl.className   = 'holiday-label';
+                                lbl.textContent = info.event.extendedProps.label;
+                                lbl.style.cssText = 'font-size:9px;color:#d63384;text-align:center;padding:0 2px;line-height:1.1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:bold;margin-top:-5px;';
+                                const frame = dayEl.querySelector('.fc-daygrid-day-frame');
+                                if (frame) frame.prepend(lbl);
+                            }
+                        }
+                    }
+                },
                 dateClick: function(info) {
                     currentSelectedDate = info.dateStr;
                     $('#pickerDateDisplay').text(new Date(info.date).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                     }));
+                    
                     filterShifts();
+
+                    // Logic: Auto-select "Libur" for non_shift on Sundays or Holidays
+                    if (currentPegawaiKategori === 'non_shift') {
+                        const date = new Date(info.date);
+                        const isSunday = date.getDay() === 0;
+                        const isHoliday = calendar.getEvents().some(e => 
+                            e.extendedProps.is_holiday && 
+                            e.startStr === info.dateStr
+                        );
+
+                        if (isSunday || isHoliday) {
+                            // Find "Libur" button in modal or just trigger save with ID 3
+                            // User requested: default pilihan jadwal otomatis: Libur
+                            // I will use Shift ID 3 as the default
+                            selectShift(3);
+                            return;
+                        }
+                    }
+
                     modalShiftPicker.show();
                 },
                 eventClick: function(info) {
+                    // Ignore clicks on holiday background events
+                    if (info.event.extendedProps.is_holiday) return;
+
                     currentSelectedDate = info.event.extendedProps.tanggal_masuk;
                     $('#pickerDateDisplay').text(new Date(currentSelectedDate).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                     }));
                     filterShifts();
                     modalShiftPicker.show();
@@ -653,11 +771,12 @@
                         });
                     }
                 });
+            });            $('.btn-select-shift').on('click', function() {
+                const shiftId = $(this).data('shift-id');
+                selectShift(shiftId);
             });
 
-            $('.btn-select-shift').on('click', function() {
-                const shiftId = $(this).data('shift-id');
-
+            function selectShift(shiftId) {
                 $.ajax({
                     url: '{{ route('jadwal.save-single') }}',
                     method: 'POST',
@@ -687,7 +806,8 @@
                         });
                     }
                 });
-            });
+            }
+;
 
             $('.btn-delete-shift').on('click', function() {
                 Swal.fire({

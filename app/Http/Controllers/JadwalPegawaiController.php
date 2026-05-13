@@ -6,6 +6,7 @@ use App\Models\JadwalPegawai;
 use App\Models\Pegawai;
 use App\Models\Ruangan;
 use App\Models\Shift;
+use App\Models\KalenderNasional;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,8 +82,16 @@ class JadwalPegawaiController extends Controller
             }]);
 
         $shifts = Shift::all();
+        
+        $holidays = KalenderNasional::aktif()
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->get()
+            ->keyBy(function($item) {
+                return $item->tanggal->format('j');
+            });
 
-        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search'));
+        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search', 'holidays'));
     }
 
     public function getEvents(Request $request, $pegawai_id)
@@ -250,6 +259,32 @@ class JadwalPegawaiController extends Controller
             return response()->json(['success' => false, 'message' => 'Tidak ada pegawai non-shift yang ditemukan.'], 404);
         }
 
+        // Fetch holidays for the month
+        $holidays = KalenderNasional::aktif()
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->get()
+            ->pluck('tanggal')
+            ->map(fn($d) => $d->format('Y-m-d'))
+            ->toArray();
+
+        // Find Libur shift for non_shift
+        $liburShift = Shift::where('kategori_jadwal', 'non_shift')
+            ->where(function($q) {
+                $q->where('kode_shift', 'L')
+                  ->orWhere('kode_shift', 'Libur')
+                  ->orWhere('nama_shift', 'like', '%Libur%');
+            })
+            ->first();
+
+        if (!$liburShift) {
+            // Fallback to any shift with 'L' or 'Libur' if non_shift specific one not found
+            $liburShift = Shift::where('kode_shift', 'L')
+                ->orWhere('kode_shift', 'Libur')
+                ->orWhere('nama_shift', 'like', '%Libur%')
+                ->first();
+        }
+
         $daysInMonth = Carbon::create($tahun, $bulan)->daysInMonth;
         $pegawaiIds = $pegawais->pluck('id')->toArray();
 
@@ -268,10 +303,19 @@ class JadwalPegawaiController extends Controller
             foreach ($pegawais as $pegawai) {
                 for ($day = 1; $day <= $daysInMonth; $day++) {
                     $date = Carbon::create($tahun, $bulan, $day);
+                    $dateString = $date->format('Y-m-d');
                     $dayOfWeek = $date->dayOfWeek;
 
-                    if (isset($prefillShiftByDay[$dayOfWeek])) {
+                    $shift = null;
+
+                    // Prioritize Holiday
+                    if (in_array($dateString, $holidays) && $liburShift) {
+                        $shift = $liburShift;
+                    } elseif (isset($prefillShiftByDay[$dayOfWeek])) {
                         $shift = $prefillShiftByDay[$dayOfWeek];
+                    }
+
+                    if ($shift) {
                         $tanggal_masuk = $date->format('Y-m-d');
                         $tanggal_pulang = $date->format('Y-m-d');
 
@@ -302,7 +346,7 @@ class JadwalPegawaiController extends Controller
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'Auto input jadwal non-shift berhasil dilakukan.']);
+            return response()->json(['success' => true, 'message' => 'Auto input jadwal non-shift (disesuaikan libur nasional) berhasil dilakukan.']);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'message' => 'Gagal melakukan auto input: '.$e->getMessage()], 500);
@@ -438,7 +482,15 @@ class JadwalPegawaiController extends Controller
             }
         }
 
-        return view('jadwal.create', compact('ruangans', 'shifts', 'bulan', 'tahun', 'ruangan_id', 'dates', 'pegawais', 'jadwal_existing', 'prefillShiftByDay'));
+        $holidays = KalenderNasional::aktif()
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->get()
+            ->keyBy(function($item) {
+                return $item->tanggal->format('j');
+            });
+
+        return view('jadwal.create', compact('ruangans', 'shifts', 'bulan', 'tahun', 'ruangan_id', 'dates', 'pegawais', 'jadwal_existing', 'prefillShiftByDay', 'holidays'));
     }
 
     public function store(Request $request)

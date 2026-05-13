@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring.index');
     Route::get('/dashboard/monitoring-detail', [DashboardController::class, 'getMonitoringDetail'])->name('dashboard.monitoring-detail');
+    Route::get('/api/holidays', [DashboardController::class, 'getHolidaysApi'])->name('api.holidays');
 
     // Ruangan
     Route::middleware(['permission:manage-ruangan'])->group(function () {

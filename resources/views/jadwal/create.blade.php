@@ -89,9 +89,21 @@
                                     'Saturday'  => 'Sab',
                                 ][$date->format('l')];
                             @endphp
-                            <th style="min-width: 55px; background-color: {{ $date->isWeekend() ? '#ffeaea' : '' }}; font-size: 11px; vertical-align: middle;">
+                            @php
+                                $day = $date->format('j');
+                                $holiday = $holidays[$day] ?? null;
+                                $isSunday = $date->isWeekend();
+                                $bgColor = '';
+                                if ($holiday) {
+                                    $bgColor = $holiday->jenis === 'cuti_bersama' ? '#fff9db' : '#ffeaea';
+                                } elseif ($isSunday) {
+                                    $bgColor = '#ffeaea';
+                                }
+                            @endphp
+                            <th style="min-width: 55px; background-color: {{ $bgColor }}; font-size: 11px; vertical-align: middle;"
+                                @if($holiday) data-bs-toggle="tooltip" title="{{ $holiday->nama_hari_libur }}" @endif>
                                 <span class="fw-bold d-block" style="font-size: 13px; line-height: 1.2;">{{ $date->format('j') }}</span>
-                                <span class="{{ $date->isWeekend() ? 'text-danger' : 'text-primary' }}" style="font-size: 10px;">{{ $hariId }}</span>
+                                <span class="{{ $isSunday || $holiday ? 'text-danger' : 'text-primary' }}" style="font-size: 10px;">{{ $hariId }}</span>
                             </th>
                         @endforeach
                     </tr>
@@ -111,15 +123,41 @@
 
                                 // Auto-fill for non-shift employees if no existing jadwal
                                 $isAutoFilled = false;
+                                $holiday = $holidays[$day] ?? null;
+
                                 if (!$currentShiftId && $p->kategori_kerja == 'non_shift') {
-                                    $dayOfWeek = $date->dayOfWeek; // 0=Sun, 1=Mon, ..., 6=Sat
-                                    if (isset($prefillShiftByDay[$dayOfWeek])) {
-                                        $currentShiftId = $prefillShiftByDay[$dayOfWeek]->id;
-                                        $isAutoFilled = true;
+                                    if ($holiday) {
+                                        // Priority 1: National Holiday / Cuti Bersama
+                                        $libur = $shifts->where('kode_shift', 'L')->first() 
+                                                ?? $shifts->where('kode_shift', 'Libur')->first()
+                                                ?? $shifts->filter(fn($s) => str_contains(strtolower($s->nama_shift), 'libur'))->first();
+                                        
+                                        if ($libur) {
+                                            $currentShiftId = $libur->id;
+                                            $isAutoFilled = true;
+                                        }
+                                    } else {
+                                        // Priority 2: Weekly Schedule
+                                        $dayOfWeek = $date->dayOfWeek; // 0=Sun, 1=Mon, ..., 6=Sat
+                                        if (isset($prefillShiftByDay[$dayOfWeek])) {
+                                            $currentShiftId = $prefillShiftByDay[$dayOfWeek]->id;
+                                            $isAutoFilled = true;
+                                        }
                                     }
                                 }
+
+                                // Background color logic
+                                $cellBg = '';
+                                if ($isAutoFilled) {
+                                    $cellBg = 'background-color: #f0fdf4;'; // Light green for auto-filled
+                                }
+                                if ($holiday) {
+                                    $cellBg = $holiday->jenis === 'cuti_bersama' ? 'background-color: #fff9db;' : 'background-color: #fff5f5;';
+                                } elseif ($date->isWeekend()) {
+                                    $cellBg = 'background-color: #fff5f5;';
+                                }
                             @endphp
-                            <td class="p-1" style="{{ $isAutoFilled ? 'background-color: #f0fdf4;' : '' }}{{ $date->isWeekend() ? 'background-color: #fff5f5;' : '' }}">
+                            <td class="p-1" style="{{ $cellBg }}">
                                 <select name="jadwal[{{ $p->id }}][{{ $day }}]"
                                     class="form-select form-select-sm border-0 p-0 text-center {{ $isAutoFilled ? 'bg-success bg-opacity-10' : 'bg-light' }}"
                                     style="font-size: 11px; height: 30px;"

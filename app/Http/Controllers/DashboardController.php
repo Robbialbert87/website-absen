@@ -8,6 +8,8 @@ use App\Models\Shift;
 use App\Models\JadwalPegawai;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -77,7 +79,12 @@ class DashboardController extends Controller
         $ruangan_filter = $request->get('ruangan_id');
 
         $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
-        
+
+        // Get holidays & Sundays for non-shift auto-off
+        $offDays = $this->getHolidaysAndOffDays($month, $year, $daysInMonth);
+        $offDayNumbers = $offDays['off_days'];       // array of day numbers [1,7,8,...]
+        $holidayNames  = $offDays['holiday_names'];  // [day => name]
+
         $queryRuangan = Ruangan::query();
 
         if ($user->hasRole('kepala_ruangan') && $user->pegawai_id) {
@@ -100,7 +107,7 @@ class DashboardController extends Controller
         $allRuangan = $queryRuangan->with('pegawai')->get();
         $monitoringData = [];
         $summary = [
-            'ruangan_lengkap' => 0,
+            'ruangan_lengkap'      => 0,
             'ruangan_belum_lengkap' => 0,
             'pegawai_belum_lengkap' => 0,
         ];
@@ -109,20 +116,32 @@ class DashboardController extends Controller
             $totalPegawai = $ruangan->pegawai->count();
             if ($totalPegawai == 0) continue;
 
-            $pegawaiLengkap = 0;
-            $pegawaiBelumLengkap = 0;
-            $totalJadwalTerisi = 0;
-            $totalJadwalSeharusnya = $totalPegawai * $daysInMonth;
+            $pegawaiLengkap        = 0;
+            $pegawaiBelumLengkap   = 0;
+            $totalFilledSlots      = 0; // actual filled slots (out of requiredSlots)
+            $totalRequiredSlots    = 0; // total required working days across all employees
+
+            $offCount       = count($offDayNumbers);
+            $workingDays    = $daysInMonth - $offCount; // working days for non-shift
 
             foreach ($ruangan->pegawai as $pegawai) {
+                $isNonShift = ($pegawai->kategori_kerja === 'non_shift');
+
+                // Required days: non-shift only needs to fill working days
+                $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;
+
                 $countJadwal = JadwalPegawai::where('pegawai_id', $pegawai->id)
                     ->whereMonth('tanggal_masuk', $month)
                     ->whereYear('tanggal_masuk', $year)
                     ->count();
-                
-                $totalJadwalTerisi += $countJadwal;
 
-                if ($countJadwal >= $daysInMonth) {
+                // Accumulate for room-level percentage
+                $totalRequiredSlots += $requiredDays;
+                $filled = min($countJadwal, $requiredDays); // cap at required
+                $totalFilledSlots   += $filled;
+
+                // Complete check: actual entries must reach required days
+                if ($countJadwal >= $requiredDays) {
                     $pegawaiLengkap++;
                 } else {
                     $pegawaiBelumLengkap++;
@@ -130,8 +149,13 @@ class DashboardController extends Controller
                 }
             }
 
-            $persentase = $totalJadwalSeharusnya > 0 ? round(($totalJadwalTerisi / $totalJadwalSeharusnya) * 100, 1) : 0;
-            
+            // Percentage based on actual working-day slots only
+            $persentase = $totalRequiredSlots > 0
+                ? round(($totalFilledSlots / $totalRequiredSlots) * 100, 1)
+                : 0;
+            $persentase = min($persentase, 100);
+
+
             $isLengkap = ($pegawaiBelumLengkap == 0);
             if ($isLengkap) {
                 $summary['ruangan_lengkap']++;
@@ -140,30 +164,30 @@ class DashboardController extends Controller
             }
 
             $monitoringData[] = [
-                'id' => $ruangan->id,
-                'nama_ruangan' => $ruangan->nama_ruangan,
-                'total_pegawai' => $totalPegawai,
-                'pegawai_lengkap' => $pegawaiLengkap,
+                'id'                   => $ruangan->id,
+                'nama_ruangan'         => $ruangan->nama_ruangan,
+                'total_pegawai'        => $totalPegawai,
+                'pegawai_lengkap'      => $pegawaiLengkap,
                 'pegawai_belum_lengkap' => $pegawaiBelumLengkap,
-                'persentase' => $persentase,
-                'is_lengkap' => $isLengkap
+                'persentase'           => $persentase,
+                'is_lengkap'           => $isLengkap,
             ];
         }
 
         // Sorting for charts
         $sortedByPersentase = collect($monitoringData)->sortByDesc('persentase')->values();
-        $topRuangan = $sortedByPersentase->take(5);
+        $topRuangan    = $sortedByPersentase->take(5);
         $bottomRuangan = collect($monitoringData)->sortBy('persentase')->take(5);
 
         $stats = [
             'monitoring' => [
-                'summary' => $summary,
-                'data' => $monitoringData,
-                'top' => $topRuangan,
-                'bottom' => $bottomRuangan,
-                'days_in_month' => $daysInMonth,
+                'summary'        => $summary,
+                'data'           => $monitoringData,
+                'top'            => $topRuangan,
+                'bottom'         => $bottomRuangan,
+                'days_in_month'  => $daysInMonth,
                 'selected_month' => $month,
-                'selected_year' => $year
+                'selected_year'  => $year,
             ]
         ];
 
@@ -175,47 +199,164 @@ class DashboardController extends Controller
 
     public function getMonitoringDetail(Request $request)
     {
-        $ruanganId = $request->ruangan_id;
-        $month = $request->bulan;
-        $year = $request->tahun;
+        $ruanganId   = $request->ruangan_id;
+        $month       = $request->bulan;
+        $year        = $request->tahun;
         $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+
+        // Fetch holidays & off-days
+        $offDays      = $this->getHolidaysAndOffDays($month, $year, $daysInMonth);
+        $offDayNumbers = $offDays['off_days'];      // [1, 7, 14, ...]
+        $holidayNames  = $offDays['holiday_names']; // [day => name]
 
         $ruangan = Ruangan::with('pegawai')->findOrFail($ruanganId);
         $details = [];
 
+        $offCount    = count($offDayNumbers);
+        $workingDays = $daysInMonth - $offCount;
+
         foreach ($ruangan->pegawai as $pegawai) {
+            $isNonShift = ($pegawai->kategori_kerja === 'non_shift');
+
+            // Required days: non-shift only needs to fill working days
+            $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;
+
             $jadwal = JadwalPegawai::where('pegawai_id', $pegawai->id)
                 ->whereMonth('tanggal_masuk', $month)
                 ->whereYear('tanggal_masuk', $year)
                 ->pluck('tanggal_masuk')
-                ->map(function($date) {
-                    return (int) Carbon::parse($date)->format('j');
-                })
+                ->map(fn($date) => (int) Carbon::parse($date)->format('j'))
                 ->unique()
                 ->toArray();
 
             $dayStatus = [];
             for ($i = 1; $i <= $daysInMonth; $i++) {
+                $isOff    = $isNonShift && in_array($i, $offDayNumbers);
+                $isFilled = in_array($i, $jadwal);
+                $label    = null;
+
+                if ($isOff) {
+                    $label = $holidayNames[$i] ?? 'Minggu';
+                }
+
                 $dayStatus[] = [
-                    'day' => $i,
-                    'is_filled' => in_array($i, $jadwal)
+                    'day'       => $i,
+                    'is_filled' => $isFilled,
+                    'is_off'    => $isOff,
+                    'label'     => $label,
                 ];
             }
 
-            if (count($jadwal) < $daysInMonth) {
+            // Missing = required working days - actual schedule entries
+            $missingCount = max(0, $requiredDays - count($jadwal));
+            $autoOffCount = $isNonShift ? $offCount : 0;
+
+            if ($missingCount > 0) {
                 $details[] = [
-                    'nama_pegawai' => $pegawai->nama,
-                    'total_input' => count($jadwal),
-                    'missing_count' => $daysInMonth - count($jadwal),
-                    'day_status' => $dayStatus
+                    'nama_pegawai'  => $pegawai->nama,
+                    'kategori'      => $pegawai->kategori_kerja,
+                    'total_input'   => count($jadwal),
+                    'auto_off'      => $autoOffCount,
+                    'missing_count' => $missingCount,
+                    'day_status'    => $dayStatus,
                 ];
             }
         }
 
         return response()->json([
             'ruangan' => $ruangan->nama_ruangan,
-            'details' => $details
+            'details' => $details,
         ]);
+    }
+
+    /**
+     * API endpoint: returns holiday events for FullCalendar as background events.
+     * Called via AJAX from the jadwal calendar modal.
+     */
+    public function getHolidaysApi(Request $request)
+    {
+        $year  = (int) $request->get('year',  now()->year);
+        $month = (int) $request->get('month', now()->month);
+
+        $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+        $offDays     = $this->getHolidaysAndOffDays($month, $year, $daysInMonth);
+
+        $events = [];
+        foreach ($offDays['off_days'] as $day) {
+            $date  = Carbon::create($year, $month, $day)->format('Y-m-d');
+            $label = $offDays['holiday_names'][$day] ?? 'Libur';
+            $events[] = [
+                'title'           => $label,
+                'start'           => $date,
+                'allDay'          => true,
+                'display'         => 'background',
+                'backgroundColor' => '#dc3545',
+                'classNames'      => ['holiday-bg'],
+                'extendedProps'   => [
+                    'is_holiday' => true,
+                    'label'      => $label,
+                ],
+            ];
+        }
+
+        return response()->json($events);
+    }
+
+    /**
+     * Get all off-days for a month:
+     *   - Every Sunday
+     *   - Indonesian national holidays (fetched from public API, cached 24h)
+     *
+     * Returns:
+     *   ['off_days' => [1,7,8,...], 'holiday_names' => [7 => 'Waisak', ...]]
+     */
+    private function getHolidaysAndOffDays(int $month, int $year, int $daysInMonth): array
+    {
+        $cacheKey = "holidays_{$year}_{$month}";
+
+        $holidays = Cache::remember($cacheKey, now()->addHours(24), function () use ($year) {
+            try {
+                $response = Http::timeout(5)->get(
+                    "https://dayoffapi.vercel.app/api?year={$year}"
+                );
+                if ($response->successful()) {
+                    return $response->json() ?? [];
+                }
+            } catch (\Exception $e) {
+                // API unreachable — gracefully fall back to empty
+            }
+            return [];
+        });
+
+        $offDays      = [];
+        $holidayNames = [];
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $date = Carbon::create($year, $month, $i);
+
+            // Sunday (Carbon dayOfWeek 0 = Sunday)
+            if ($date->dayOfWeek === Carbon::SUNDAY) {
+                $offDays[]      = $i;
+                $holidayNames[$i] = 'Minggu';
+                continue;
+            }
+
+            // Check national holiday
+            $dateStr = $date->format('Y-m-d');
+            foreach ($holidays as $holiday) {
+                $hDate = $holiday['tanggal'] ?? $holiday['date'] ?? null;
+                if ($hDate === $dateStr) {
+                    $offDays[]        = $i;
+                    $holidayNames[$i] = $holiday['keterangan'] ?? $holiday['name'] ?? 'Libur Nasional';
+                    break;
+                }
+            }
+        }
+
+        return [
+            'off_days'      => $offDays,
+            'holiday_names' => $holidayNames,
+        ];
     }
 
 }

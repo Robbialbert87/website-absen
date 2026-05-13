@@ -271,6 +271,10 @@
                         <span class="badge bg-danger" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
                         <small class="text-muted">Belum Terisi</small>
                     </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="badge bg-primary" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                        <small class="text-muted">Libur (Minggu / Nasional)</small>
+                    </div>
                 </div>
                 <div id="noDataDetail" class="text-center py-5 d-none">
                     <img src="https://illustrations.popsy.co/teal/work-from-home.svg" style="width: 150px;" class="mb-3">
@@ -347,14 +351,31 @@
                         response.details.forEach(item => {
                             let calendarHtml = '';
                             item.day_status.forEach(ds => {
-                                let badgeClass = ds.is_filled ? 'bg-success' : 'bg-danger';
-                                calendarHtml += `<span class="badge ${badgeClass} mb-1 me-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">${ds.day}</span>`;
+                                let badgeClass, title;
+                                if (ds.is_off) {
+                                    badgeClass = 'bg-primary';
+                                    title = ds.label || 'Libur';
+                                } else if (ds.is_filled) {
+                                    badgeClass = 'bg-success';
+                                    title = 'Terisi';
+                                } else {
+                                    badgeClass = 'bg-danger';
+                                    title = 'Kosong';
+                                }
+                                calendarHtml += `<span class="badge ${badgeClass} mb-1 me-1" title="${title}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;cursor:default;">${ds.day}</span>`;
                             });
+
+                            const autoOffBadge = item.auto_off > 0
+                                ? `<span class="badge bg-primary ms-1">${item.auto_off} Libur</span>`
+                                : '';
 
                             html += `
                                 <tr>
                                     <td class="fw-bold text-dark">${item.nama_pegawai}</td>
-                                    <td class="text-center"><span class="badge bg-light text-dark px-3 py-2 border">${item.total_input} Hari</span></td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark px-3 py-2 border">${item.total_input} Hari</span>
+                                        ${autoOffBadge}
+                                    </td>
                                     <td class="text-center"><span class="badge bg-danger px-3 py-2">${item.missing_count} Hari</span></td>
                                     <td>
                                         <div class="d-flex flex-wrap">
