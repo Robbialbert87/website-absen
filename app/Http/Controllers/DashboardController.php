@@ -189,23 +189,25 @@ class DashboardController extends Controller
                 ->whereYear('tanggal_masuk', $year)
                 ->pluck('tanggal_masuk')
                 ->map(function($date) {
-                    return Carbon::parse($date)->format('j');
+                    return (int) Carbon::parse($date)->format('j');
                 })
+                ->unique()
                 ->toArray();
 
-            if (count($jadwal) < $daysInMonth) {
-                $missingDates = [];
-                for ($i = 1; $i <= $daysInMonth; $i++) {
-                    if (!in_array($i, $jadwal)) {
-                        $missingDates[] = $i;
-                    }
-                }
+            $dayStatus = [];
+            for ($i = 1; $i <= $daysInMonth; $i++) {
+                $dayStatus[] = [
+                    'day' => $i,
+                    'is_filled' => in_array($i, $jadwal)
+                ];
+            }
 
+            if (count($jadwal) < $daysInMonth) {
                 $details[] = [
-                    'nama_pegawai' => $pegawai->nama_pegawai,
+                    'nama_pegawai' => $pegawai->nama,
                     'total_input' => count($jadwal),
                     'missing_count' => $daysInMonth - count($jadwal),
-                    'missing_dates' => $missingDates
+                    'day_status' => $dayStatus
                 ];
             }
         }

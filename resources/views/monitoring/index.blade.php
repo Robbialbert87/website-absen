@@ -249,18 +249,28 @@
             <div class="modal-body p-4 pt-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="tableDetail">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>Nama Pegawai</th>
-                                <th class="text-center">Input (Hari)</th>
-                                <th class="text-center">Kurang (Hari)</th>
-                                <th>Tanggal Kosong</th>
+                                <th style="width: 250px;">Nama Pegawai</th>
+                                <th class="text-center" style="width: 100px;">Input</th>
+                                <th class="text-center" style="width: 100px;">Kurang</th>
+                                <th>Status Kalender Bulanan</th>
                             </tr>
                         </thead>
                         <tbody id="detailContent">
                             <!-- Filled by AJAX -->
                         </tbody>
                     </table>
+                </div>
+                <div class="mt-3 d-flex gap-3 justify-content-center">
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="badge bg-success" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                        <small class="text-muted">Jadwal Terisi</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="badge bg-danger" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                        <small class="text-muted">Belum Terisi</small>
+                    </div>
                 </div>
                 <div id="noDataDetail" class="text-center py-5 d-none">
                     <img src="https://illustrations.popsy.co/teal/work-from-home.svg" style="width: 150px;" class="mb-3">
@@ -335,14 +345,20 @@
                         $('#noDataDetail').addClass('d-none');
                         
                         response.details.forEach(item => {
+                            let calendarHtml = '';
+                            item.day_status.forEach(ds => {
+                                let badgeClass = ds.is_filled ? 'bg-success' : 'bg-danger';
+                                calendarHtml += `<span class="badge ${badgeClass} mb-1 me-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">${ds.day}</span>`;
+                            });
+
                             html += `
                                 <tr>
-                                    <td class="fw-bold">${item.nama_pegawai}</td>
-                                    <td class="text-center"><span class="badge bg-light text-dark">${item.total_input}</span></td>
-                                    <td class="text-center"><span class="badge bg-danger">${item.missing_count}</span></td>
+                                    <td class="fw-bold text-dark">${item.nama_pegawai}</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark px-3 py-2 border">${item.total_input} Hari</span></td>
+                                    <td class="text-center"><span class="badge bg-danger px-3 py-2">${item.missing_count} Hari</span></td>
                                     <td>
-                                        <div class="d-flex flex-wrap gap-1">
-                                            ${item.missing_dates.map(date => `<span class="badge bg-warning-subtle text-warning border-0" style="font-size: 0.7rem;">${date}</span>`).join('')}
+                                        <div class="d-flex flex-wrap">
+                                            ${calendarHtml}
                                         </div>
                                     </td>
                                 </tr>
