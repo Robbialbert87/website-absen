@@ -127,4 +127,30 @@ class RuanganController extends Controller
 
         return response()->json($results);
     }
+
+    public function addPegawai(Ruangan $ruangan)
+    {
+        // Ambil pegawai yang belum masuk ke ruangan ini
+        $pegawais = Pegawai::where('ruangan_id', '!=', $ruangan->id)
+            ->orWhereNull('ruangan_id')
+            ->orderBy('nama')
+            ->get();
+            
+        return response()->json([
+            'ruangan' => $ruangan,
+            'pegawais' => $pegawais
+        ]);
+    }
+
+    public function storePegawai(Request $request, Ruangan $ruangan)
+    {
+        $pegawaiIds = $request->input('pegawai_ids', []);
+        
+        if (!empty($pegawaiIds)) {
+            // Update ruangan_id untuk pegawai-pegawai yang dipilih
+            Pegawai::whereIn('id', $pegawaiIds)->update(['ruangan_id' => $ruangan->id]);
+        }
+        
+        return response()->json(['success' => true, 'message' => 'Pegawai berhasil ditambahkan ke ruangan ' . $ruangan->nama_ruangan]);
+    }
 }

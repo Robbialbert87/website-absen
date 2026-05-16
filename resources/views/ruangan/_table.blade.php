@@ -26,6 +26,12 @@
             </td>
             <td>{{ $r->keterangan }}</td>
             <td class="text-end px-4">
+                <button type="button" class="btn btn-sm btn-outline-success btn-add-pegawai" 
+                        data-id="{{ $r->id }}" 
+                        data-name="{{ $r->nama_ruangan }}"
+                        title="Tambah Pegawai">
+                    <i class="fas fa-user-plus"></i>
+                </button>
                 <a href="{{ route('ruangan.edit', $r->id) }}" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-edit"></i>
                 </a>

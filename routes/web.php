@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['permission:manage-ruangan'])->group(function () {
         Route::get('/ruangan/search', [RuanganController::class, 'search'])->name('ruangan.search');
         Route::get('/ruangan/search-kepala', [RuanganController::class, 'searchKepala'])->name('ruangan.search-kepala');
+        Route::get('/ruangan/{ruangan}/add-pegawai', [RuanganController::class, 'addPegawai'])->name('ruangan.add-pegawai');
+        Route::post('/ruangan/{ruangan}/store-pegawai', [RuanganController::class, 'storePegawai'])->name('ruangan.store-pegawai');
         Route::resource('ruangan', RuanganController::class);
         Route::get('/import-ruangan', [ImportRuanganController::class, 'index'])->name('ruangan.import.index');
         Route::post('/import-ruangan', [ImportRuanganController::class, 'import'])->name('ruangan.import.store');
