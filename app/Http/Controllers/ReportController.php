@@ -12,18 +12,28 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function index(Request $request, $type = 'shift')
+    public function index(Request $request, $type = 'all')
     {
         $ruangans = Ruangan::all();
         $kategori_kerjas = Pegawai::distinct()->whereNotNull('kategori_kerja')->pluck('kategori_kerja');
         
+        // Map type to either kategori_kerja or kategori_jadwal
+        $default_kategori_kerja = null;
+        $default_kategori_jadwal = null;
+        
+        if ($type === 'shift' || $type === 'non_shift') {
+            $default_kategori_kerja = $type;
+        } elseif ($type !== 'all') {
+            $default_kategori_jadwal = $type;
+        }
+
         $filters = [
             'bulan' => $request->get('bulan', date('m')),
             'tahun' => $request->get('tahun', date('Y')),
             'ruangan_id' => $request->get('ruangan_id'),
-            'kategori_kerja' => $request->get('kategori_kerja'),
+            'kategori_kerja' => $request->get('kategori_kerja', $default_kategori_kerja),
             'pegawai_id' => $request->get('pegawai_id'),
-            'kategori_jadwal' => $type,
+            'kategori_jadwal' => $request->get('kategori_jadwal', $default_kategori_jadwal),
         ];
 
         $pegawais = [];

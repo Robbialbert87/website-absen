@@ -95,8 +95,8 @@ class JadwalExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
 
         return [
             trim(str_replace(["\xc2\xa0", "\xa0"], '', $jadwal->pegawai?->nip)),
-            '="' . $jamMasuk . '"',
-            '="' . $jamPulang . '"',
+            $jamMasuk,
+            $jamPulang,
         ];
     }
 

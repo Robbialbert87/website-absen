@@ -17,7 +17,11 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <form id="filterForm" action="{{ route('report.export') }}" method="GET">
-                    <input type="hidden" name="kategori_jadwal" value="{{ $type }}">
+                    @if($type === 'shift' || $type === 'non_shift')
+                        <input type="hidden" name="kategori_kerja" value="{{ $type }}">
+                    @elseif($type !== 'all')
+                        <input type="hidden" name="kategori_jadwal" value="{{ $type }}">
+                    @endif
                     <div class="row g-3">
                         <div class="col-md-2">
                             <label class="form-label fw-600">Bulan</label>
@@ -52,6 +56,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if($type === 'all')
                         <div class="col-md-2">
                             <label class="form-label fw-600">Kategori Kerja</label>
                             <select name="kategori_kerja" id="kategori_kerja" class="form-select select2">
@@ -64,6 +69,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @endif
                         <div class="col-md-3">
                             <label class="form-label fw-600">Pegawai (Optional)</label>
                             <select name="pegawai_id" id="pegawai_id" class="form-select select2">
