@@ -26,6 +26,12 @@
             </td>
             <td>{{ $r->keterangan }}</td>
             <td class="text-end px-4">
+                <button type="button" class="btn btn-sm btn-outline-info btn-show-pegawai" 
+                        data-id="{{ $r->id }}" 
+                        data-name="{{ $r->nama_ruangan }}"
+                        title="Lihat Pegawai">
+                    <i class="fas fa-eye"></i>
+                </button>
                 <button type="button" class="btn btn-sm btn-outline-success btn-add-pegawai" 
                         data-id="{{ $r->id }}" 
                         data-name="{{ $r->nama_ruangan }}"

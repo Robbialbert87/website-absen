@@ -153,4 +153,22 @@ class RuanganController extends Controller
         
         return response()->json(['success' => true, 'message' => 'Pegawai berhasil ditambahkan ke ruangan ' . $ruangan->nama_ruangan]);
     }
+
+    public function showPegawai(Ruangan $ruangan)
+    {
+        $pegawais = Pegawai::where('ruangan_id', $ruangan->id)->orderBy('nama')->get();
+        return response()->json([
+            'ruangan' => $ruangan,
+            'pegawais' => $pegawais
+        ]);
+    }
+
+    public function removePegawai(Request $request, Ruangan $ruangan, Pegawai $pegawai)
+    {
+        if ($pegawai->ruangan_id == $ruangan->id) {
+            $pegawai->update(['ruangan_id' => null]);
+            return response()->json(['success' => true, 'message' => 'Pegawai berhasil dikeluarkan dari ruangan.']);
+        }
+        return response()->json(['success' => false, 'message' => 'Pegawai tidak ditemukan di ruangan ini.'], 404);
+    }
 }

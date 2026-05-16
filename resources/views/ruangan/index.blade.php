@@ -40,7 +40,90 @@
         <script>
             $(document).ready(function() {
                 const modalAddPegawai = new bootstrap.Modal(document.getElementById('modalAddPegawai'));
+                const modalShowPegawai = new bootstrap.Modal(document.getElementById('modalShowPegawai'));
 
+                // --- Lihat Pegawai ---
+                $(document).on('click', '.btn-show-pegawai', function() {
+                    const id = $(this).data('id');
+                    const name = $(this).data('name');
+                    
+                    $('#showModalRoomName').text(name);
+                    $('#show_room_id').val(id);
+                    
+                    $('#listPegawaiBody').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin me-1"></i> Memuat data...</td></tr>');
+                    modalShowPegawai.show();
+
+                    fetchRoomEmployees(id);
+                });
+
+                function fetchRoomEmployees(roomId) {
+                    const url = "{{ route('ruangan.show-pegawai', ':id') }}".replace(':id', roomId);
+                    $.get(url, function(response) {
+                        let rows = '';
+                        if (response.pegawais.length === 0) {
+                            rows = '<tr><td colspan="4" class="text-center py-4 text-muted">Tidak ada pegawai di ruangan ini.</td></tr>';
+                        } else {
+                            response.pegawais.forEach((p, index) => {
+                                rows += `
+                                    <tr>
+                                        <td class="text-center small">${index + 1}</td>
+                                        <td>
+                                            <div class="fw-bold">${p.nama}</div>
+                                            <div class="small text-muted">${p.nip}</div>
+                                        </td>
+                                        <td class="small">${p.jabatan || '-'}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-danger btn-remove-pegawai" 
+                                                    data-id="${p.id}" 
+                                                    data-room-id="${roomId}"
+                                                    title="Keluarkan dari ruangan">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                        }
+                        $('#listPegawaiBody').html(rows);
+                    });
+                }
+
+                $(document).on('click', '.btn-remove-pegawai', function() {
+                    const pegawaiId = $(this).data('id');
+                    const roomId = $(this).data('room-id');
+                    
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Pegawai akan dikeluarkan dari ruangan ini.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Keluarkan!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const url = "{{ route('ruangan.remove-pegawai', [':roomId', ':pegawaiId']) }}"
+                                .replace(':roomId', roomId)
+                                .replace(':pegawaiId', pegawaiId);
+
+                            $.ajax({
+                                url: url,
+                                method: 'POST',
+                                data: { _token: '{{ csrf_token() }}' },
+                                success: function(response) {
+                                    Swal.fire('Berhasil', response.message, 'success');
+                                    fetchRoomEmployees(roomId);
+                                },
+                                error: function() {
+                                    Swal.fire('Gagal', 'Terjadi kesalahan saat mengeluarkan pegawai.', 'error');
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // --- Tambah Pegawai ---
                 $(document).on('click', '.btn-add-pegawai', function() {
                     const id = $(this).data('id');
                     const name = $(this).data('name');
@@ -106,6 +189,36 @@
             });
         </script>
     @endpush
+
+    <!-- Modal Lihat Pegawai -->
+    <div class="modal fade" id="modalShowPegawai" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 p-4">
+                    <h5 class="modal-title fw-bold" style="color: #1A7A6E;">Daftar Pegawai di <span id="showModalRoomName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-0">
+                    <input type="hidden" id="show_room_id">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light sticky-top">
+                                <tr>
+                                    <th class="text-center" width="50">No</th>
+                                    <th>Pegawai</th>
+                                    <th>Jabatan</th>
+                                    <th class="text-center" width="80">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listPegawaiBody">
+                                <!-- Loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Tambah Pegawai -->
     <div class="modal fade" id="modalAddPegawai" tabindex="-1" aria-hidden="true">
