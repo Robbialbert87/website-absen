@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login SIJAGA_HAM | {{ config('app.name', 'Absensi') }}</title>
+    <title>Login SIJAGA | {{ config('app.name', 'Absensi') }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('/images/logo.png') }}">
 
     <!-- Bootstrap 5 CSS -->
@@ -97,7 +97,7 @@
             width: 250px;
             object-fit: contain;
         }
-        
+
 
         .brand-logo span {
             color: var(--accent);
