@@ -65,7 +65,7 @@ class JadwalPegawaiController extends Controller
             $pegawaiQuery->where('nama', 'like', '%'.$search.'%');
         }
         
-        $pegawais = $pegawaiQuery->get();
+        $pegawais = $pegawaiQuery->paginate(10)->withQueryString();
 
         $pegawaiIds = $pegawais->pluck('id')->toArray();
 
@@ -187,7 +187,7 @@ class JadwalPegawaiController extends Controller
         
         $request->validate([
             'pegawai_id' => 'nullable|exists:pegawai,id',
-            'ruangan_id' => 'nullable|exists:ruangan,id',
+            'ruangan_id' => 'nullable',
             'bulan' => 'required',
             'tahun' => 'required',
         ]);
@@ -358,7 +358,7 @@ class JadwalPegawaiController extends Controller
         $user = auth()->user();
         $request->validate([
             'pegawai_id' => 'nullable|exists:pegawai,id',
-            'ruangan_id' => 'nullable|exists:ruangan,id',
+            'ruangan_id' => 'nullable',
             'bulan' => 'required',
             'tahun' => 'required',
         ]);

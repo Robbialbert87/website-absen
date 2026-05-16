@@ -6,6 +6,7 @@ use App\Models\Pegawai;
 use App\Models\Ruangan;
 use App\Models\Shift;
 use App\Models\JadwalPegawai;
+use App\Models\KalenderNasional;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -285,16 +286,19 @@ class DashboardController extends Controller
         foreach ($offDays['off_days'] as $day) {
             $date  = Carbon::create($year, $month, $day)->format('Y-m-d');
             $label = $offDays['holiday_names'][$day] ?? 'Libur';
+            $color = $offDays['holiday_colors'][$day] ?? '#dc3545';
+
             $events[] = [
                 'title'           => $label,
                 'start'           => $date,
                 'allDay'          => true,
                 'display'         => 'background',
-                'backgroundColor' => '#dc3545',
+                'backgroundColor' => $color,
                 'classNames'      => ['holiday-bg'],
                 'extendedProps'   => [
                     'is_holiday' => true,
                     'label'      => $label,
+                    'color'      => $color,
                 ],
             ];
         }
@@ -312,50 +316,40 @@ class DashboardController extends Controller
      */
     private function getHolidaysAndOffDays(int $month, int $year, int $daysInMonth): array
     {
-        $cacheKey = "holidays_{$year}_{$month}";
-
-        $holidays = Cache::remember($cacheKey, now()->addHours(24), function () use ($year) {
-            try {
-                $response = Http::timeout(5)->get(
-                    "https://dayoffapi.vercel.app/api?year={$year}"
-                );
-                if ($response->successful()) {
-                    return $response->json() ?? [];
-                }
-            } catch (\Exception $e) {
-                // API unreachable — gracefully fall back to empty
-            }
-            return [];
-        });
+        // Get holidays from DB
+        $dbHolidays = KalenderNasional::aktif()
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->get();
 
         $offDays      = [];
         $holidayNames = [];
+        $holidayColors = [];
 
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $date = Carbon::create($year, $month, $i);
 
-            // Sunday (Carbon dayOfWeek 0 = Sunday)
+            // Sunday
             if ($date->dayOfWeek === Carbon::SUNDAY) {
                 $offDays[]      = $i;
                 $holidayNames[$i] = 'Minggu';
+                $holidayColors[$i] = '#dc3545';
                 continue;
             }
 
-            // Check national holiday
-            $dateStr = $date->format('Y-m-d');
-            foreach ($holidays as $holiday) {
-                $hDate = $holiday['tanggal'] ?? $holiday['date'] ?? null;
-                if ($hDate === $dateStr) {
-                    $offDays[]        = $i;
-                    $holidayNames[$i] = $holiday['keterangan'] ?? $holiday['name'] ?? 'Libur Nasional';
-                    break;
-                }
+            // Check DB holiday
+            $h = $dbHolidays->first(fn($item) => $item->tanggal->day === $i);
+            if ($h) {
+                $offDays[]        = $i;
+                $holidayNames[$i] = $h->nama_hari_libur;
+                $holidayColors[$i] = $h->jenis === 'cuti_bersama' ? '#ffc107' : '#dc3545';
             }
         }
 
         return [
             'off_days'      => $offDays,
             'holiday_names' => $holidayNames,
+            'holiday_colors' => $holidayColors,
         ];
     }
 

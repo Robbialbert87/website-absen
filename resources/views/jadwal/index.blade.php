@@ -204,6 +204,21 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($pegawais->hasPages())
+            <div class="px-4 py-3 border-top bg-light">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                    <div class="small text-muted fw-medium">
+                        Menampilkan <span class="text-dark">{{ $pegawais->firstItem() }}</span> sampai
+                        <span class="text-dark">{{ $pegawais->lastItem() }}</span> dari
+                        <span class="text-dark">{{ $pegawais->total() }}</span> pegawai
+                    </div>
+                    <div class="pagination-container">
+                        {{ $pegawais->links() }}
+                    </div>
+                </div>
+            </div>
+        @endif
         
         <!-- Keterangan Warna Shift (Inside Matrix Card) -->
         <div class="card-footer bg-white border-top py-3">
@@ -236,6 +251,30 @@
         .matrix-table td {
             font-size: 0.8rem;
             white-space: nowrap;
+        }
+
+        .pagination {
+            margin-bottom: 0;
+            gap: 2px;
+        }
+
+        .pagination .page-link {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: none;
+            color: #6c757d;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #f8f9fa;
+            color: var(--accent);
         }
 
         .sticky-column {
