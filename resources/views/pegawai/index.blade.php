@@ -16,7 +16,7 @@
             @endhasanyrole
         </div> --}}
 
-        <x-filter-card title="Master Pegawai"
+        <x-filter-card :title="$pageTitle"
             createRoute="{{ auth()->user()->hasAnyRole(['super_admin', 'admin'])? route('pegawai.create'): null }}"
             createText="Tambah Pegawai"
             exportExcel="{{ route('pegawai.index', array_merge(request()->query(), ['export' => 'excel'])) }}"
@@ -25,30 +25,32 @@
                 <input type="text" name="search" class="form-control form-control-sm"
                     placeholder="Cari NIP, Nama, Jabatan..." value="{{ request('search') }}">
             </div>
-            <div class="col-md-3">
-                <select name="ruangan_id" class="form-select form-select-sm">
-                    <option value="">Semua Ruangan</option>
-                    @foreach ($ruangans as $r)
-                        <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
-                            {{ $r->nama_ruangan }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="kategori_kerja" class="form-select form-select-sm">
-                    <option value="">Semua Kategori</option>
-                    <option value="non_shift" {{ request('kategori_kerja') == 'non_shift' ? 'selected' : '' }}>Non Shift
-                    </option>
-                    <option value="shift" {{ request('kategori_kerja') == 'shift' ? 'selected' : '' }}>Shift</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="status_aktif" class="form-select form-select-sm">
-                    <option value="">Semua Status</option>
-                    <option value="1" {{ request('status_aktif') == '1' ? 'selected' : '' }}>Aktif</option>
-                    <option value="0" {{ request('status_aktif') == '0' ? 'selected' : '' }}>Non-Aktif</option>
-                </select>
-            </div>
+            @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+                <div class="col-md-3">
+                    <select name="ruangan_id" class="form-select form-select-sm">
+                        <option value="">Semua Ruangan</option>
+                        @foreach ($ruangans as $r)
+                            <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
+                                {{ $r->nama_ruangan }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="kategori_kerja" class="form-select form-select-sm">
+                        <option value="">Semua Kategori</option>
+                        <option value="non_shift" {{ request('kategori_kerja') == 'non_shift' ? 'selected' : '' }}>Non Shift
+                        </option>
+                        <option value="shift" {{ request('kategori_kerja') == 'shift' ? 'selected' : '' }}>Shift</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status_aktif" class="form-select form-select-sm">
+                        <option value="">Semua Status</option>
+                        <option value="1" {{ request('status_aktif') == '1' ? 'selected' : '' }}>Aktif</option>
+                        <option value="0" {{ request('status_aktif') == '0' ? 'selected' : '' }}>Non-Aktif</option>
+                    </select>
+                </div>
+            @endif
         </x-filter-card>
 
         @include('pegawai._table')

@@ -69,6 +69,10 @@
                 </div>
                 <div class="col-md-2 text-end">
                     <div class="d-flex gap-1 justify-content-end">
+                        <a href="{{ route('jadwal.export-excel', request()->all()) }}" target="_blank" class="btn btn-outline-success rounded-pill px-3"
+                            style="font-size: 0.75rem;" title="Export Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
                         <button type="button" class="btn btn-outline-danger rounded-pill px-3 btn-reset-room"
                             style="font-size: 0.75rem;" title="Reset Jadwal">
                             <i class="fas fa-undo"></i>
@@ -79,10 +83,6 @@
                                 <i class="fas fa-magic"></i>
                             </button>
                         @endif
-                        <div class="form-check form-switch ms-2 mt-1">
-                            <input class="form-check-input" type="checkbox" id="toggleHolidays" checked>
-                            <label class="form-check-label small fw-bold text-muted text-uppercase" for="toggleHolidays" style="font-size: 10px;">Libur</label>
-                        </div>
                     </div>
                 </div>
             </form>
@@ -290,6 +290,19 @@
             line-height: 1.5;
             border-radius: 3px;
         }
+
+        #toggleHolidays {
+            cursor: pointer;
+            box-shadow: none !important;
+        }
+        #toggleHolidays:checked {
+            background-color: #198754 !important; /* Green */
+            border-color: #198754 !important;
+        }
+        #toggleHolidays:not(:checked) {
+            background-color: #6c757d !important; /* Gray/Red */
+            border-color: #6c757d !important;
+        }
     </style>
 
     <!-- Modal Calendar -->
@@ -301,7 +314,11 @@
                         <i class="fas fa-calendar-check me-2"></i>
                         Jadwal Kerja: <span id="calendarEmployeeName"></span>
                     </h5>
-                    <div class="ms-auto me-3 d-flex gap-2">
+                    <div class="ms-auto me-3 d-flex gap-2 align-items-center">
+                        <div class="form-check form-switch me-2 mb-0" style="transform: scale(1.1); transform-origin: right;">
+                            <input class="form-check-input" type="checkbox" id="toggleHolidays" checked>
+                            <label class="form-check-label small fw-bold text-white text-uppercase" for="toggleHolidays" style="font-size: 10px; margin-top: 2px; cursor: pointer;">Libur</label>
+                        </div>
                         <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-reset-individual">
                             <i class="fas fa-undo me-1"></i> Reset Jadwal
                         </button>

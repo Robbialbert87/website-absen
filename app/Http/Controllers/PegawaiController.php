@@ -40,9 +40,20 @@ class PegawaiController extends Controller
             return view('pegawai._table', compact('pegawai'))->render();
         }
 
+        $pageTitle = 'Master Pegawai';
+        if (! $user->hasAnyRole(['super_admin', 'admin'])) {
+            $userRoom = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)->first();
+            if (!$userRoom) {
+                $userRoom = Ruangan::find($user->ruangan_id);
+            }
+            if ($userRoom) {
+                $pageTitle = 'Pegawai ' . $userRoom->nama_ruangan;
+            }
+        }
+
         $ruangans = Ruangan::all();
 
-        return view('pegawai.index', compact('pegawai', 'ruangans'));
+        return view('pegawai.index', compact('pegawai', 'ruangans', 'pageTitle'));
     }
 
     public function create()

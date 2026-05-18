@@ -10,6 +10,8 @@ use App\Models\KalenderNasional;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\JadwalPegawaiExport;
 
 class JadwalPegawaiController extends Controller
 {
@@ -576,5 +578,91 @@ class JadwalPegawaiController extends Controller
             DB::rollBack();
             return back()->with('error', 'Gagal menyimpan jadwal: '.$e->getMessage());
         }
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $bulan = $request->get('bulan', date('m'));
+        $tahun = $request->get('tahun', date('Y'));
+
+        $user = auth()->user();
+        $query = Ruangan::query();
+
+        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+            $query->where(function ($q) use ($user) {
+                $q->where('kepala_pegawai_id', $user->pegawai_id)
+                    ->orWhere('id', $user->ruangan_id);
+            });
+        }
+
+        $ruangans = $query->get();
+        
+        $default_ruangan = ($user->isAdmin() || $user->hasRole('super-admin')) ? 'all' : $ruangans->first()?->id;
+        $selected_ruangan_id = $request->get('ruangan_id', $default_ruangan);
+
+        $search = $request->get('search');
+
+        $daysInMonth = Carbon::create($tahun, $bulan)->daysInMonth;
+
+        $dates = [];
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $dates[] = Carbon::create($tahun, $bulan, $i);
+        }
+
+        $pegawaiQuery = Pegawai::with('ruangan');
+
+        // jika bukan admin/super-admin
+        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+            // Ambil ID ruangan yang diperbolehkan (ruangan sendiri + ruangan yang dikepalai)
+            $allowedRoomIds = $ruangans->pluck('id')->toArray();
+            $pegawaiQuery->whereIn('ruangan_id', $allowedRoomIds);
+        }
+
+        // filter dropdown ruangan
+        if (
+            $selected_ruangan_id &&
+            $selected_ruangan_id !== 'all'
+        ) {
+            $pegawaiQuery->where('ruangan_id', $selected_ruangan_id);
+        }
+
+        // search nama
+        if ($search) {
+            $pegawaiQuery->where('nama', 'like', '%'.$search.'%');
+        }
+        
+        $pegawais = $pegawaiQuery->get();
+
+        $pegawaiIds = $pegawais->pluck('id')->toArray();
+
+        $jadwal = JadwalPegawai::with(['shift' => function($q) {
+                $q->select('id', 'nama_shift', 'kode_shift', 'jam_masuk', 'jam_pulang', 'warna');
+            }])
+            ->select('id', 'pegawai_id', 'shift_id', 'tanggal_masuk', 'jam_masuk', 'jam_pulang', 'kode_shift')
+            ->whereIn('pegawai_id', $pegawaiIds)
+            ->whereMonth('tanggal_masuk', $bulan)
+            ->whereYear('tanggal_masuk', $tahun)
+            ->get()
+            ->groupBy(['pegawai_id', function ($item) {
+                return Carbon::parse($item->tanggal_masuk)->format('j');
+            }]);
+
+        $shifts = Shift::all();
+        
+        $holidays = KalenderNasional::aktif()
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->get()
+            ->keyBy(function($item) {
+                return $item->tanggal->format('j');
+            });
+
+        $data = compact(
+            'ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 
+            'bulan', 'tahun', 'dates', 'jadwal', 'search', 'holidays'
+        );
+
+        return Excel::download(new JadwalPegawaiExport($data), 'jadwal-pegawai-' . $bulan . '-' . $tahun . '.xlsx');
     }
 }

@@ -76,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/jadwal/delete-single', [JadwalPegawaiController::class, 'deleteSingle'])->name('jadwal.delete-single');
         Route::post('/jadwal/auto-fill', [JadwalPegawaiController::class, 'autoFill'])->name('jadwal.auto-fill');
         Route::post('/jadwal/reset', [JadwalPegawaiController::class, 'resetJadwal'])->name('jadwal.reset');
+        Route::get('/jadwal/export-excel', [JadwalPegawaiController::class, 'exportExcel'])->name('jadwal.export-excel');
     });
 
     // Reports
