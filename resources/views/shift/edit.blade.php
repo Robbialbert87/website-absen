@@ -31,6 +31,7 @@
                             <label class="form-label">Kategori Jadwal</label>
                             <select name="kategori_jadwal" class="form-select @error('kategori_jadwal') is-invalid @enderror" required>
                                 <option value="non_shift" {{ old('kategori_jadwal', $shift->kategori_jadwal) == 'non_shift' ? 'selected' : '' }}>Non Shift (Biru)</option>
+                                <option value="non_shift_5_hari" {{ old('kategori_jadwal', $shift->kategori_jadwal) == 'non_shift_5_hari' ? 'selected' : '' }}>Non Shift 5 Hari (Cyan)</option>
                                 <option value="shift" {{ old('kategori_jadwal', $shift->kategori_jadwal) == 'shift' ? 'selected' : '' }}>Shift (Hijau)</option>
                                 <option value="cuti" {{ old('kategori_jadwal', $shift->kategori_jadwal) == 'cuti' ? 'selected' : '' }}>Cuti (Kuning)</option>
                             </select>

@@ -32,7 +32,7 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $s->kode_shift }}</td>
                 <td>{{ $s->nama_shift }}</td>
-                <td>{{ $s->kategori_jadwal == 'shift' ? 'Shift' : 'Non Shift' }}</td>
+                <td>{{ $s->kategori_jadwal == 'shift' ? 'Shift' : ($s->kategori_jadwal == 'non_shift_5_hari' ? 'Non Shift 5 Hari' : ($s->kategori_jadwal == 'cuti' ? 'Cuti' : 'Non Shift')) }}</td>
                 <td>{{ $s->jam_masuk }}</td>
                 <td>{{ $s->jam_pulang }}</td>
                 <td>{{ $s->keterangan }}</td>

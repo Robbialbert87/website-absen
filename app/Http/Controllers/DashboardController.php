@@ -132,7 +132,7 @@ class DashboardController extends Controller
             $workingDays    = $daysInMonth - $offCount; // working days for non-shift
 
             foreach ($ruangan->pegawai as $pegawai) {
-                $isNonShift = ($pegawai->kategori_kerja === 'non_shift');
+                $isNonShift = ($pegawai->kategori_kerja === 'non_shift' || $pegawai->kategori_kerja === 'non_shift_5_hari');
 
                 // Required days: non-shift only needs to fill working days
                 $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;
@@ -223,7 +223,7 @@ class DashboardController extends Controller
         $workingDays = $daysInMonth - $offCount;
 
         foreach ($ruangan->pegawai as $pegawai) {
-            $isNonShift = ($pegawai->kategori_kerja === 'non_shift');
+            $isNonShift = ($pegawai->kategori_kerja === 'non_shift' || $pegawai->kategori_kerja === 'non_shift_5_hari');
 
             // Required days: non-shift only needs to fill working days
             $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;

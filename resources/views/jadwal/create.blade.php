@@ -113,7 +113,7 @@
                     <tr>
                         <td class="px-3">
                             <div class="fw-bold" style="font-size: 0.9rem;">{{ $p->nama }}</div>
-                            <small class="text-muted" style="font-size: 0.75rem;">{{ $p->nip }} ({{ $p->kategori_kerja == 'shift' ? 'Shift' : 'Non-Shift' }})</small>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ $p->nip }} ({{ $p->kategori_kerja == 'shift' ? 'Shift' : ($p->kategori_kerja == 'non_shift_5_hari' ? 'Non Shift 5 Hari' : 'Non-Shift') }})</small>
                         </td>
                         @foreach($dates as $date)
                             @php
@@ -125,7 +125,7 @@
                                 $isAutoFilled = false;
                                 $holiday = $holidays[$day] ?? null;
 
-                                if (!$currentShiftId && $p->kategori_kerja == 'non_shift') {
+                                if (!$currentShiftId && ($p->kategori_kerja == 'non_shift' || $p->kategori_kerja == 'non_shift_5_hari')) {
                                     if ($holiday) {
                                         // Priority 1: National Holiday / Cuti Bersama
                                         $libur = $shifts->where('kode_shift', 'L')->first() 
@@ -169,13 +169,13 @@
                                             <option value="{{ $s->id }}" {{ $currentShiftId == $s->id ? 'selected' : '' }}>{{ $s->kode_shift }}</option>
                                         @elseif($p->kategori_kerja == 'shift' && $s->kategori_jadwal == 'shift')
                                             <option value="{{ $s->id }}" {{ $currentShiftId == $s->id ? 'selected' : '' }}>{{ $s->kode_shift }}</option>
-                                        @elseif($p->kategori_kerja == 'non_shift' && $s->kategori_jadwal == 'non_shift')
+                                        @elseif(($p->kategori_kerja == 'non_shift' || $p->kategori_kerja == 'non_shift_5_hari') && ($s->kategori_jadwal == 'non_shift' || $s->kategori_jadwal == 'non_shift_5_hari'))
                                             <option value="{{ $s->id }}" {{ $currentShiftId == $s->id ? 'selected' : '' }}>{{ $s->kode_shift }}</option>
                                         @endif
                                     @endforeach
                                     {{-- Always allow Libur --}}
                                     @php $libur = $shifts->where('kode_shift', 'L')->first(); @endphp
-                                    @if($libur && $p->kategori_kerja == 'non_shift' && $libur->kategori_jadwal != 'non_shift')
+                                    @if($libur && ($p->kategori_kerja == 'non_shift' || $p->kategori_kerja == 'non_shift_5_hari') && $libur->kategori_jadwal != 'non_shift' && $libur->kategori_jadwal != 'non_shift_5_hari')
                                         <option value="{{ $libur->id }}" {{ $currentShiftId == $libur->id ? 'selected' : '' }}>L</option>
                                     @endif
                                 </select>

@@ -22,7 +22,7 @@ class PegawaiFactory extends Factory
             'nama' => $this->faker->name,
             'ruangan_id' => Ruangan::all()->random()->id,
             'jabatan' => $this->faker->jobTitle,
-            'kategori_kerja' => $this->faker->randomElement(['non_shift', 'shift']),
+            'kategori_kerja' => $this->faker->randomElement(['non_shift', 'shift', 'non_shift_5_hari']),
             'shift_id' => Shift::all()->random()->id,
             'status_aktif' => $this->faker->boolean,
         ];

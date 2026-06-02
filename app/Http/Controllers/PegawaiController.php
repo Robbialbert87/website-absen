@@ -71,7 +71,7 @@ class PegawaiController extends Controller
             'nama' => 'required',
             'ruangan_id' => 'required|exists:ruangan,id',
             'jabatan' => 'required',
-            'kategori_kerja' => 'required|in:non_shift,shift',
+            'kategori_kerja' => 'required|in:non_shift,shift,non_shift_5_hari',
             'shift_id' => 'nullable|exists:shifts,id',
             'status_aktif' => 'required|boolean',
         ]);
@@ -96,7 +96,7 @@ class PegawaiController extends Controller
             'nama' => 'required',
             'ruangan_id' => 'required|exists:ruangan,id',
             'jabatan' => 'required',
-            'kategori_kerja' => 'required|in:non_shift,shift',
+            'kategori_kerja' => 'required|in:non_shift,shift,non_shift_5_hari',
             'shift_id' => 'nullable|exists:shifts,id',
             'status_aktif' => 'required|boolean',
         ]);

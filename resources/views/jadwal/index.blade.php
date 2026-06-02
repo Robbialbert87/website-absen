@@ -38,7 +38,7 @@
                     <input type="hidden" name="ruangan_id" id="ruangan_id" value="{{ $selected_ruangan_id }}">
                 @endif
                 <div
-                    class="{{ auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin') ? 'col-md-3' : 'col-md-6' }}">
+                    class="{{ auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin') ? 'col-md-2' : 'col-md-3' }}">
                     <label class="form-label small text-muted text-uppercase fw-bold">Cari Nama Pegawai</label>
                     <div class="input-group">
                         <input type="text" name="search" class="form-select" placeholder="Ketik nama..."
@@ -47,6 +47,15 @@
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Kategori</label>
+                    <select name="kategori_kerja" class="form-select" onchange="this.form.submit()">
+                        <option value="">Semua</option>
+                        <option value="non_shift" {{ $kategori_kerja == 'non_shift' ? 'selected' : '' }}>Non Shift</option>
+                        <option value="non_shift_5_hari" {{ $kategori_kerja == 'non_shift_5_hari' ? 'selected' : '' }}>Non Shift 5 Hari</option>
+                        <option value="shift" {{ $kategori_kerja == 'shift' ? 'selected' : '' }}>Shift</option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-muted text-uppercase fw-bold">Bulan</label>
@@ -68,19 +77,23 @@
                     </select>
                 </div>
                 <div class="col-md-2 text-end">
-                    <div class="d-flex gap-1 justify-content-end">
-                        <a href="{{ route('jadwal.export-excel', request()->all()) }}" target="_blank" class="btn btn-outline-success rounded-pill px-3"
+                    <div class="d-flex gap-1 justify-content-end" style="padding-top: 1.5rem;">
+                        <a href="{{ route('jadwal.export-excel', request()->all()) }}" target="_blank" class="btn btn-sm btn-outline-success px-2 py-1"
                             style="font-size: 0.75rem;" title="Export Excel">
                             <i class="fas fa-file-excel"></i>
                         </a>
-                        <button type="button" class="btn btn-outline-danger rounded-pill px-3 btn-reset-room"
+                        <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 btn-reset-room"
                             style="font-size: 0.75rem;" title="Reset Jadwal">
                             <i class="fas fa-undo"></i>
                         </button>
                         @if (auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin'))
-                            <button type="button" class="btn btn-outline-primary rounded-pill px-3 btn-auto-fill-room"
-                                style="font-size: 0.75rem;" title="Auto Input">
-                                <i class="fas fa-magic"></i>
+                            <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 btn-auto-fill-room"
+                                style="font-size: 0.75rem;" title="Auto Input 6 Hari">
+                                <i class="fas fa-magic me-1"></i>6 Hari
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info px-2 py-1 btn-auto-fill-room-5-hari"
+                                style="font-size: 0.75rem;" title="Auto Input 5 Hari">
+                                <i class="fas fa-magic me-1"></i>5 Hari
                             </button>
                         @endif
                     </div>
@@ -149,7 +162,7 @@
                                         <div class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">{{ $p->nama }}
                                         </div>
                                         <div class="text-muted" style="font-size: 0.7rem;">{{ $p->nip }}
-                                            ({{ ucfirst($p->kategori_kerja) }})
+                                            ({{ $p->kategori_kerja == 'non_shift_5_hari' ? 'Non Shift 5 Hari' : ucfirst($p->kategori_kerja) }})
                                         </div>
                                     </div>
                                     <button type="button" class="btn btn-primary btn-sm rounded-pill btn-atur-jadwal px-3"
@@ -325,8 +338,14 @@
                         @if (auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin'))
                             <div class="d-none" id="autoFillIndividualContainer">
                                 <button type="button"
-                                    class="btn btn-light btn-sm rounded-pill px-3 btn-auto-fill-individual">
-                                    <i class="fas fa-magic me-1"></i> Auto Input Non-Shift
+                                    class="btn btn-light btn-sm px-2 btn-auto-fill-individual"
+                                    data-kategori="non_shift" style="font-size: 0.7rem;">
+                                    <i class="fas fa-magic me-1"></i> 6 Hari
+                                </button>
+                                <button type="button"
+                                    class="btn btn-outline-info btn-sm px-2 btn-auto-fill-individual-5-hari"
+                                    data-kategori="non_shift_5_hari" style="font-size: 0.7rem;">
+                                    <i class="fas fa-magic me-1"></i> 5 Hari
                                 </button>
                             </div>
                         @endif
@@ -458,8 +477,15 @@
             hasChanged = false; // Reset flag for new session
             $('#calendarEmployeeName').text(nama);
 
-            if (kategori === 'non_shift') {
+            if (kategori === 'non_shift' || kategori === 'non_shift_5_hari') {
                 $('#autoFillIndividualContainer').removeClass('d-none');
+                if (kategori === 'non_shift_5_hari') {
+                    $('.btn-auto-fill-individual').addClass('d-none');
+                    $('.btn-auto-fill-individual-5-hari').removeClass('d-none');
+                } else {
+                    $('.btn-auto-fill-individual').removeClass('d-none');
+                    $('.btn-auto-fill-individual-5-hari').addClass('d-none');
+                }
             } else {
                 $('#autoFillIndividualContainer').addClass('d-none');
             }
@@ -495,11 +521,11 @@
                         shouldShow = true;
                     }
                 }
-                // 3. Jika pegawai kategori 'non_shift'
-                else if (currentPegawaiKategori === 'non_shift') {
-                    // Tampilkan yang kategorinya 'non_shift' atau 'pagi' (biasanya office hours)
+                // 3. Jika pegawai kategori 'non_shift' atau 'non_shift_5_hari'
+                else if (currentPegawaiKategori === 'non_shift' || currentPegawaiKategori === 'non_shift_5_hari') {
+                    // Tampilkan yang kategorinya 'non_shift', 'non_shift_5_hari', atau 'pagi' (biasanya office hours)
                     // Dan pastikan namanya TIDAK mengandung kata 'shift'
-                    if ((shiftKategori === 'non_shift' || shiftKategori === 'pagi' || shiftKategori === '') &&
+                    if ((shiftKategori === 'non_shift' || shiftKategori === 'non_shift_5_hari' || shiftKategori === 'pagi' || shiftKategori === '') &&
                         !shiftNama.includes('shift')) {
                         shouldShow = true;
                     }
@@ -638,8 +664,8 @@
                     
                     filterShifts();
 
-                    // Logic: Auto-select "Libur" for non_shift on Sundays or Holidays
-                    if (currentPegawaiKategori === 'non_shift') {
+                    // Logic: Auto-select "Libur" for non_shift / non_shift_5_hari on Sundays or Holidays
+                    if (currentPegawaiKategori === 'non_shift' || currentPegawaiKategori === 'non_shift_5_hari') {
                         const date = new Date(info.date);
                         const isSunday = date.getDay() === 0;
                         const isHoliday = calendar.getEvents().some(e => 
@@ -675,14 +701,14 @@
 
         $(document).ready(function() {
 
-            $('.btn-auto-fill-individual').on('click', function() {
+            function doAutoFillIndividual(kategori, label) {
                 const viewDate = calendar.getDate();
                 const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
                 const year = viewDate.getFullYear();
 
                 Swal.fire({
                     title: 'Auto Input Jadwal?',
-                    text: `Jadwal non-shift untuk bulan ${month}/${year} akan diisi otomatis. Jadwal yang sudah ada akan diperbarui.`,
+                    text: `Jadwal ${label} untuk bulan ${month}/${year} akan diisi otomatis. Jadwal yang sudah ada akan diperbarui.`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Jalankan!',
@@ -696,7 +722,8 @@
                                 _token: '{{ csrf_token() }}',
                                 pegawai_id: currentPegawaiId,
                                 bulan: month,
-                                tahun: year
+                                tahun: year,
+                                kategori: kategori
                             },
                             success: function(response) {
                                 hasChanged = true;
@@ -710,9 +737,17 @@
                         });
                     }
                 });
+            }
+
+            $('.btn-auto-fill-individual').on('click', function() {
+                doAutoFillIndividual('non_shift', 'Non Shift');
             });
 
-            $('.btn-auto-fill-room').on('click', function() {
+            $('.btn-auto-fill-individual-5-hari').on('click', function() {
+                doAutoFillIndividual('non_shift_5_hari', 'Non Shift 5 Hari');
+            });
+
+            function doAutoFillRoom(kategori, label) {
                 const ruangan_id = $('#ruangan_id').val();
                 let month = $('#filter_bulan').val();
                 let year = $('#filter_tahun').val();
@@ -722,7 +757,7 @@
 
                 Swal.fire({
                     title: 'Auto Input ' + (isAll ? 'Seluruh Ruangan?' : 'Ruangan?'),
-                    text: `Semua pegawai non-shift di ${locationText} akan diisi jadwalnya secara otomatis untuk bulan ${month}/${year}.`,
+                    text: `Semua pegawai ${label} di ${locationText} akan diisi jadwalnya secara otomatis untuk bulan ${month}/${year}.`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Jalankan!',
@@ -736,7 +771,8 @@
                                 _token: '{{ csrf_token() }}',
                                 ruangan_id: ruangan_id,
                                 bulan: month,
-                                tahun: year
+                                tahun: year,
+                                kategori: kategori
                             },
                             success: function(response) {
                                 location.reload();
@@ -749,6 +785,14 @@
                         });
                     }
                 });
+            }
+
+            $('.btn-auto-fill-room').on('click', function() {
+                doAutoFillRoom('non_shift', 'Non Shift');
+            });
+
+            $('.btn-auto-fill-room-5-hari').on('click', function() {
+                doAutoFillRoom('non_shift_5_hari', 'Non Shift 5 Hari');
             });
 
             $('.btn-reset-room').on('click', function() {

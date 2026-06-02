@@ -41,7 +41,7 @@ class ShiftController extends Controller
         $validated = $request->validate([
             'kode_shift' => 'required|unique:shifts,kode_shift',
             'nama_shift' => 'required',
-            'kategori_jadwal' => 'required|in:non_shift,shift,cuti',
+            'kategori_jadwal' => 'required|in:non_shift,shift,cuti,non_shift_5_hari',
             'jam_masuk' => 'required',
             'jam_pulang' => 'required',
             'warna' => 'nullable',
@@ -69,7 +69,7 @@ class ShiftController extends Controller
         $validated = $request->validate([
             'kode_shift' => 'required|unique:shifts,kode_shift,' . $shift->id,
             'nama_shift' => 'required',
-            'kategori_jadwal' => 'required|in:non_shift,shift',
+            'kategori_jadwal' => 'required|in:non_shift,shift,cuti,non_shift_5_hari',
             'jam_masuk' => 'required',
             'jam_pulang' => 'required',
             'warna' => 'nullable',

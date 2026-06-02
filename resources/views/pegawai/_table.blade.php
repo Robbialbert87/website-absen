@@ -19,6 +19,8 @@
             <td>
                 @if($p->kategori_kerja == 'shift')
                     <span class="badge bg-success">Shift</span>
+                @elseif($p->kategori_kerja == 'non_shift_5_hari')
+                    <span class="badge bg-info">Non Shift 5 Hari</span>
                 @else
                     <span class="badge bg-primary">Non Shift</span>
                 @endif
