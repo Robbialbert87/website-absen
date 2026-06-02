@@ -22,7 +22,21 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'force_change_password'])->group(function () {
+    // Password Change
+    Route::get('/password/change', [\App\Http\Controllers\PasswordController::class, 'showChangeForm'])->name('password.change');
+    Route::post('/password/change', [\App\Http\Controllers\PasswordController::class, 'update'])->name('password.update');
+
+    // Admin Kegiatan
+    Route::middleware(['role:admin|super_admin'])->group(function () {
+        Route::resource('kegiatan', \App\Http\Controllers\KegiatanController::class);
+    });
+
+    // User Kegiatan
+    Route::get('/user/kegiatan', [\App\Http\Controllers\UserKegiatanController::class, 'index'])->name('user.kegiatan.index');
+    Route::get('/user/kegiatan/{id}/absen', [\App\Http\Controllers\UserKegiatanController::class, 'absenForm'])->name('user.kegiatan.absen-form');
+    Route::post('/user/kegiatan/{id}/absen', [\App\Http\Controllers\UserKegiatanController::class, 'absen'])->name('user.kegiatan.absen');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring.index');
     Route::get('/dashboard/monitoring-detail', [DashboardController::class, 'getMonitoringDetail'])->name('dashboard.monitoring-detail');

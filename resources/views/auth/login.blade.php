@@ -177,10 +177,10 @@
             <form action="{{ route('login') }}" method="POST">
                 @csrf
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                        id="email" value="{{ old('email') }}" required autofocus placeholder="name@example.com">
-                    @error('email')
+                    <label for="login" class="form-label">Email atau NIP</label>
+                    <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
+                        id="login" value="{{ old('login') }}" required autofocus placeholder="name@example.com atau NIP">
+                    @error('login')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

@@ -22,6 +22,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
+    @stack('styles')
     <style>
         :root {
             --sidebar-width: 280px;
@@ -224,78 +225,104 @@
             <img src="{{ asset('images/logo.png') }}" alt="Logo">
         </div>
 
-        <div class="sidebar-section-title">Menu Utama</div>
+        {{-- =============================================
+             MENU UNTUK PEGAWAI BIASA (role: user saja)
+             Hanya dapat melihat Absensi Kegiatan
+             ============================================= --}}
+        @if (auth()->user()->isPegawaiBiasa())
+            <div class="sidebar-section-title">Menu</div>
+            <a href="{{ route('user.kegiatan.index') }}" class="sidebar-link {{ request()->routeIs('user.kegiatan.*') ? 'active' : '' }}">
+                <i class="fas fa-camera"></i> Absensi Kegiatan
+            </a>
 
-        @can('view-dashboard')
-            <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-        @endcan
+        {{-- =============================================
+             MENU UNTUK USER BERPERAN (admin, kepala, dll)
+             Tetap seperti semula, tidak ada perubahan
+             ============================================= --}}
+        @else
+            <div class="sidebar-section-title">Menu Utama</div>
 
-        <div class="sidebar-section-title">Master Data</div>
-
-        @can('manage-ruangan')
-            <a href="{{ route('ruangan.index') }}"
-                class="sidebar-link {{ request()->routeIs('ruangan.*') ? 'active' : '' }}">
-                <i class="fas fa-door-open"></i> Ruangan
-            </a>
-        @endcan
-
-        @can('manage-pegawai')
-            <a href="{{ route('pegawai.index') }}"
-                class="sidebar-link {{ request()->routeIs('pegawai.*') ? 'active' : '' }}">
-                <i class="fas fa-users"></i> Pegawai
-            </a>
-        @endcan
-
-        @can('manage-shift')
-            <a href="{{ route('shift.index') }}" class="sidebar-link {{ request()->routeIs('shift.*') ? 'active' : '' }}">
-                <i class="fas fa-calendar-alt"></i> Master Jadwal
-            </a>
-        @endcan
-
-        <div class="sidebar-section-title">Report</div>
-        @if (auth()->user()->isAdmin())
-            <a href="{{ route('report.index', 'shift') }}"
-                class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'shift')) ? 'active' : '' }}">
-                <i class="fas fa-file-invoice"></i> Report Jadwal Shift
-            </a>
-            <a href="{{ route('report.index', 'non_shift') }}"
-                class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift')) ? 'active' : '' }}">
-                <i class="fas fa-file-alt"></i> Report Jadwal Non Shift
-            </a>
-            <a href="{{ route('cuti.index') }}"
-                class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
-                <i class="fas fa-user-clock"></i> Data Cuti
-            </a>
-            <a href="{{ route('monitoring.index') }}"
-                class="sidebar-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
-                <i class="fas fa-chart-line"></i> Monitoring Jadwal
-            </a>
-@endif
-
-        <div class="sidebar-section-title">Operasional</div>
-        @can('manage-jadwal')
-            <a href="{{ route('jadwal.index') }}"
-                class="sidebar-link {{ request()->routeIs('jadwal.*') ? 'active' : '' }}">
-                <i class="fas fa-calendar-check"></i> Jadwal Kerja
-            </a>
-        @endcan
-
-        @if (auth()->user()->can('manage-users') || auth()->user()->can('manage-roles'))
-            <div class="sidebar-section-title">Akses & Keamanan</div>
-            @can('manage-users')
-                <a href="{{ route('user.index') }}"
-                    class="sidebar-link {{ request()->routeIs('user.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-shield"></i> Manajemen User
+            @can('view-dashboard')
+                <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
             @endcan
-            @can('manage-roles')
-                <a href="{{ route('role.index') }}"
-                    class="sidebar-link {{ request()->routeIs('role.*') ? 'active' : '' }}">
-                    <i class="fas fa-key"></i> Role & Permission
+
+            <div class="sidebar-section-title">Master Data</div>
+
+            @can('manage-ruangan')
+                <a href="{{ route('ruangan.index') }}"
+                    class="sidebar-link {{ request()->routeIs('ruangan.*') ? 'active' : '' }}">
+                    <i class="fas fa-door-open"></i> Ruangan
                 </a>
             @endcan
+
+            @can('manage-pegawai')
+                <a href="{{ route('pegawai.index') }}"
+                    class="sidebar-link {{ request()->routeIs('pegawai.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i> Pegawai
+                </a>
+            @endcan
+
+            @can('manage-shift')
+                <a href="{{ route('shift.index') }}" class="sidebar-link {{ request()->routeIs('shift.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-alt"></i> Master Jadwal
+                </a>
+            @endcan
+
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('kegiatan.index') }}" class="sidebar-link {{ request()->routeIs('kegiatan.*') ? 'active' : '' }}">
+                    <i class="fas fa-tasks"></i> Manajemen Kegiatan
+                </a>
+            @endif
+
+            <div class="sidebar-section-title">Report</div>
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('report.index', 'shift') }}"
+                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'shift')) ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice"></i> Report Jadwal Shift
+                </a>
+                <a href="{{ route('report.index', 'non_shift') }}"
+                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift')) ? 'active' : '' }}">
+                    <i class="fas fa-file-alt"></i> Report Jadwal Non Shift
+                </a>
+                <a href="{{ route('cuti.index') }}"
+                    class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-clock"></i> Data Cuti
+                </a>
+                <a href="{{ route('monitoring.index') }}"
+                    class="sidebar-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
+                    <i class="fas fa-chart-line"></i> Monitoring Jadwal
+                </a>
+            @endif
+
+            <div class="sidebar-section-title">Operasional</div>
+            @can('manage-jadwal')
+                <a href="{{ route('jadwal.index') }}"
+                    class="sidebar-link {{ request()->routeIs('jadwal.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-check"></i> Jadwal Kerja
+                </a>
+            @endcan
+
+            <a href="{{ route('user.kegiatan.index') }}" class="sidebar-link {{ request()->routeIs('user.kegiatan.*') ? 'active' : '' }}">
+                <i class="fas fa-camera"></i> Absensi Kegiatan
+            </a>
+
+            @if (auth()->user()->can('manage-users') || auth()->user()->can('manage-roles'))
+                <div class="sidebar-section-title">Akses & Keamanan</div>
+                @can('manage-users')
+                    <a href="{{ route('user.index') }}"
+                        class="sidebar-link {{ request()->routeIs('user.*') ? 'active' : '' }}">
+                        <i class="fas fa-user-shield"></i> Manajemen User
+                    </a>
+                @endcan
+                @can('manage-roles')
+                    <a href="{{ route('role.index') }}"
+                        class="sidebar-link {{ request()->routeIs('role.*') ? 'active' : '' }}">
+                        <i class="fas fa-key"></i> Role & Permission
+                    </a>
+                @endcan
+            @endif
         @endif
 
         <div class="sidebar-section-title">Lainnya</div>

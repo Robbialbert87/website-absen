@@ -17,6 +17,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        // Pegawai biasa (role: user saja) hanya bisa akses halaman Absensi Kegiatan
+        if ($user->isPegawaiBiasa()) {
+            return redirect()->route('user.kegiatan.index');
+        }
+
         $today = Carbon::today();
         $month = $today->month;
         $year = $today->year;

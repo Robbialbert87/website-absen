@@ -17,19 +17,30 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'login' => ['required'],
             'password' => ['required'],
         ]);
 
+        $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        $credentials = [
+            $loginType => $request->login,
+            'password' => $request->password,
+        ];
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $user = Auth::user();
+            if ($user->isPegawaiBiasa()) {
+                return redirect()->route('user.kegiatan.index');
+            }
             return redirect()->intended('dashboard');
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+            'login' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
+        ])->onlyInput('login');
     }
 
     public function logout(Request $request)

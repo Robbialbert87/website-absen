@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\Filterable;
 
-#[Fillable(['name', 'email', 'password', 'pegawai_id', 'ruangan_id'])]
+#[Fillable(['name', 'email', 'username', 'password', 'pegawai_id', 'ruangan_id', 'password_changed_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -21,7 +21,22 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->hasRole('admin');
+        return $this->hasRole('admin') || $this->hasRole('super_admin');
+    }
+
+    /**
+     * Pegawai biasa = hanya memiliki role 'user', bukan admin/super_admin/kepala_ruangan/staff.
+     * User ini login via NIP dan hanya dapat mengakses menu Absensi Kegiatan.
+     */
+    public function isPegawaiBiasa(): bool
+    {
+        $privilegedRoles = ['admin', 'super_admin', 'kepala_ruangan', 'staff'];
+        foreach ($privilegedRoles as $role) {
+            if ($this->hasRole($role)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public function pegawai()
