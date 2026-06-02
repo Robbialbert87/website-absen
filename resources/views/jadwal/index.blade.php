@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-0">Jadwal Kerja Pegawai</h4>
+            <h4 class="mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Jadwal Kerja Pegawai</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>

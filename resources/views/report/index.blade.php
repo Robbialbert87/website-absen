@@ -6,7 +6,7 @@
             <div class="col-12">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h2 class="fw-bold mb-0">Report Jadwal {{ ucfirst($type) }}</h2>
+                        <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Report Jadwal {{ $type == 'non_shift' ? 'Non Shift' : ($type == 'non_shift_5_hari' ? 'Non Shift 5 Hari Kerja' : ucwords($type)) }}</h2>
                         <p class="text-muted mb-0">Export data jadwal pegawai ke format Excel.</p>
                     </div>
                 </div>

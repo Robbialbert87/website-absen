@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Edit Pegawai</h1>
+        <h1 class="h3 mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Edit Pegawai</h1>
     </div>
 
     <div class="row">
