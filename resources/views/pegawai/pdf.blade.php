@@ -32,7 +32,7 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $p->nip }}</td>
                 <td>{{ $p->nama }}</td>
-                <td>{{ $p->kategori_kerja == 'shift' ? 'Shift' : 'Non Shift' }}</td>
+                <td>{{ $p->kategori_kerja == 'shift' ? 'Shift' : ($p->kategori_kerja == 'non_shift_5_hari' ? 'Non Shift 5 Hari' : 'Non Shift') }}</td>
                 <td>{{ $p->ruangan->nama_ruangan ?? '-' }}</td>
                 <td>{{ $p->jabatan }}</td>
                 <td>{{ $p->status_aktif ? 'Aktif' : 'Non-Aktif' }}</td>

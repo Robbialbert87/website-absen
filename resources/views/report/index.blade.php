@@ -17,7 +17,7 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <form id="filterForm" action="{{ route('report.export') }}" method="GET">
-                    @if($type === 'shift' || $type === 'non_shift')
+                    @if($type === 'shift' || $type === 'non_shift' || $type === 'non_shift_5_hari')
                         <input type="hidden" name="kategori_kerja" value="{{ $type }}">
                     @elseif($type !== 'all')
                         <input type="hidden" name="kategori_jadwal" value="{{ $type }}">

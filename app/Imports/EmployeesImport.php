@@ -46,7 +46,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
             'nama' => 'required',
             'ruangan' => 'required',
             'jabatan' => 'required',
-            'kategori_kerja' => 'nullable|in:non_shift,shift',
+            'kategori_kerja' => 'nullable|in:non_shift,shift,non_shift_5_hari',
             'status_aktif' => 'required',
         ];
     }

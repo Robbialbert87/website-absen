@@ -286,6 +286,10 @@
                     class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift')) ? 'active' : '' }}">
                     <i class="fas fa-file-alt"></i> Report Jadwal Non Shift
                 </a>
+                <a href="{{ route('report.index', 'non_shift_5_hari') }}"
+                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift_5_hari')) ? 'active' : '' }}">
+                    <i class="fas fa-file-alt"></i> Report Jadwal Non Shift 5 Hari
+                </a>
                 <a href="{{ route('cuti.index') }}"
                     class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
                     <i class="fas fa-user-clock"></i> Data Cuti
@@ -312,7 +316,7 @@
                 <div class="sidebar-section-title">Akses & Keamanan</div>
                 @can('manage-users')
                     <a href="{{ route('user.index') }}"
-                        class="sidebar-link {{ request()->routeIs('user.*') ? 'active' : '' }}">
+                        class="sidebar-link {{ request()->routeIs('user.index') ? 'active' : '' }}">
                         <i class="fas fa-user-shield"></i> Manajemen User
                     </a>
                 @endcan

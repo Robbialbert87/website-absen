@@ -21,7 +21,7 @@ class ReportController extends Controller
         $default_kategori_kerja = null;
         $default_kategori_jadwal = null;
         
-        if ($type === 'shift' || $type === 'non_shift') {
+        if ($type === 'shift' || $type === 'non_shift' || $type === 'non_shift_5_hari') {
             $default_kategori_kerja = $type;
         } elseif ($type !== 'all') {
             $default_kategori_jadwal = $type;

@@ -22,6 +22,10 @@
             <td>
                 @if($s->kategori_jadwal == 'non_shift')
                     <span class="badge bg-primary">Non Shift</span>
+                @elseif($s->kategori_jadwal == 'non_shift_5_hari')
+                    <span class="badge bg-info">Non Shift 5 Hari</span>
+                @elseif($s->kategori_jadwal == 'cuti')
+                    <span class="badge bg-warning text-dark">Cuti</span>
                 @else
                     <span class="badge bg-success">Shift</span>
                 @endif

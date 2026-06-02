@@ -43,7 +43,7 @@
                 <td style="vertical-align: middle;">
                     <strong>{{ $p->nama }}</strong>
                     <br>
-                    <small>{{ $p->nip }} ({{ ucfirst($p->kategori_kerja) }})</small>
+                    <small>{{ $p->nip }} ({{ $p->kategori_kerja == 'non_shift_5_hari' ? 'Non Shift 5 Hari' : ucfirst($p->kategori_kerja) }})</small>
                 </td>
                 @foreach ($dates as $date)
                     @php

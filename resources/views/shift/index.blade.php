@@ -21,6 +21,8 @@
                     <option value="">Semua Kategori</option>
                     <option value="non_shift" {{ request('kategori_jadwal') == 'non_shift' ? 'selected' : '' }}>Non Shift
                     </option>
+                    <option value="non_shift_5_hari" {{ request('kategori_jadwal') == 'non_shift_5_hari' ? 'selected' : '' }}>Non Shift 5 Hari
+                    </option>
                     <option value="shift" {{ request('kategori_jadwal') == 'shift' ? 'selected' : '' }}>Shift</option>
                     <option value="cuti" {{ request('kategori_jadwal') == 'cuti' ? 'selected' : '' }}>Cuti</option>
                 </select>

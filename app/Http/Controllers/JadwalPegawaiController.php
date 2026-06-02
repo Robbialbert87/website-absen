@@ -36,6 +36,7 @@ class JadwalPegawaiController extends Controller
         $selected_ruangan_id = $request->get('ruangan_id', $default_ruangan);
 
         $search = $request->get('search');
+        $kategori_kerja = $request->get('kategori_kerja');
 
         $daysInMonth = Carbon::create($tahun, $bulan)->daysInMonth;
 
@@ -66,6 +67,11 @@ class JadwalPegawaiController extends Controller
         if ($search) {
             $pegawaiQuery->where('nama', 'like', '%'.$search.'%');
         }
+
+        // filter kategori kerja
+        if ($kategori_kerja) {
+            $pegawaiQuery->where('kategori_kerja', $kategori_kerja);
+        }
         
         $pegawais = $pegawaiQuery->paginate(10)->withQueryString();
 
@@ -93,7 +99,7 @@ class JadwalPegawaiController extends Controller
                 return $item->tanggal->format('j');
             });
 
-        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search', 'holidays'));
+        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search', 'kategori_kerja', 'holidays'));
     }
 
     public function getEvents(Request $request, $pegawai_id)
@@ -192,10 +198,12 @@ class JadwalPegawaiController extends Controller
             'ruangan_id' => 'nullable',
             'bulan' => 'required',
             'tahun' => 'required',
+            'kategori' => 'nullable|in:non_shift,non_shift_5_hari',
         ]);
 
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+        $kategori = $request->kategori ?: 'non_shift';
 
         // Permission check
         if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
@@ -227,7 +235,9 @@ class JadwalPegawaiController extends Controller
             6 => 'is_sabtu',
         ];
 
-        $nonShiftShifts = Shift::where('kategori_jadwal', 'non_shift')->get();
+        $kategoriLabel = $kategori === 'non_shift_5_hari' ? 'Non Shift 5 Hari' : 'Non Shift';
+
+        $nonShiftShifts = Shift::where('kategori_jadwal', $kategori)->get();
         $prefillShiftByDay = [];
         foreach ($dayFieldMap as $dayNum => $field) {
             foreach ($nonShiftShifts as $s) {
@@ -239,10 +249,10 @@ class JadwalPegawaiController extends Controller
         }
 
         if (empty($prefillShiftByDay)) {
-            return response()->json(['success' => false, 'message' => 'Master jadwal non-shift belum dikonfigurasi.'], 422);
+            return response()->json(['success' => false, 'message' => "Master jadwal {$kategoriLabel} belum dikonfigurasi."], 422);
         }
 
-        $query = Pegawai::where('kategori_kerja', 'non_shift');
+        $query = Pegawai::where('kategori_kerja', $kategori);
         
         if ($request->pegawai_id) {
             $query->where('id', $request->pegawai_id);
@@ -258,7 +268,7 @@ class JadwalPegawaiController extends Controller
 
         $pegawais = $query->get();
         if ($pegawais->isEmpty()) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada pegawai non-shift yang ditemukan.'], 404);
+            return response()->json(['success' => false, 'message' => "Tidak ada pegawai {$kategoriLabel} yang ditemukan."], 404);
         }
 
         // Fetch holidays for the month
@@ -270,8 +280,8 @@ class JadwalPegawaiController extends Controller
             ->map(fn($d) => $d->format('Y-m-d'))
             ->toArray();
 
-        // Find Libur shift for non_shift
-        $liburShift = Shift::where('kategori_jadwal', 'non_shift')
+        // Find Libur shift for selected kategori
+        $liburShift = Shift::where('kategori_jadwal', $kategori)
             ->where(function($q) {
                 $q->where('kode_shift', 'L')
                   ->orWhere('kode_shift', 'Libur')
@@ -317,6 +327,11 @@ class JadwalPegawaiController extends Controller
                         $shift = $prefillShiftByDay[$dayOfWeek];
                     }
 
+                    // For Non Shift 5 Hari: Sabtu & Minggu otomatis libur
+                    if (!$shift && $kategori === 'non_shift_5_hari' && $liburShift && in_array($dayOfWeek, [0, 6])) {
+                        $shift = $liburShift;
+                    }
+
                     if ($shift) {
                         $tanggal_masuk = $date->format('Y-m-d');
                         $tanggal_pulang = $date->format('Y-m-d');
@@ -348,7 +363,7 @@ class JadwalPegawaiController extends Controller
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'Auto input jadwal non-shift (disesuaikan libur nasional) berhasil dilakukan.']);
+            return response()->json(['success' => true, 'message' => "Auto input jadwal {$kategoriLabel} (disesuaikan libur nasional) berhasil dilakukan."]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'message' => 'Gagal melakukan auto input: '.$e->getMessage()], 500);
@@ -471,7 +486,7 @@ class JadwalPegawaiController extends Controller
             6 => 'is_sabtu',
         ];
 
-        $nonShiftShifts = Shift::where('kategori_jadwal', 'non_shift')->get();
+        $nonShiftShifts = Shift::whereIn('kategori_jadwal', ['non_shift', 'non_shift_5_hari'])->get();
 
         // Build: dayOfWeek => Shift model
         $prefillShiftByDay = [];
@@ -601,6 +616,7 @@ class JadwalPegawaiController extends Controller
         $selected_ruangan_id = $request->get('ruangan_id', $default_ruangan);
 
         $search = $request->get('search');
+        $kategori_kerja = $request->get('kategori_kerja');
 
         $daysInMonth = Carbon::create($tahun, $bulan)->daysInMonth;
 
@@ -630,6 +646,11 @@ class JadwalPegawaiController extends Controller
         // search nama
         if ($search) {
             $pegawaiQuery->where('nama', 'like', '%'.$search.'%');
+        }
+
+        // filter kategori kerja
+        if ($kategori_kerja) {
+            $pegawaiQuery->where('kategori_kerja', $kategori_kerja);
         }
         
         $pegawais = $pegawaiQuery->get();

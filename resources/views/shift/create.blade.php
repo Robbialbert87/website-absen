@@ -37,6 +37,8 @@
                                     <option value="">Pilih Kategori</option>
                                     <option value="non_shift" {{ old('kategori_jadwal') == 'non_shift' ? 'selected' : '' }}>
                                         Non Shift (Biru)</option>
+                                    <option value="non_shift_5_hari" {{ old('kategori_jadwal') == 'non_shift_5_hari' ? 'selected' : '' }}>
+                                        Non Shift 5 Hari (Cyan)</option>
                                     <option value="shift" {{ old('kategori_jadwal') == 'shift' ? 'selected' : '' }}>Shift
                                         (Hijau)</option>
                                     <option value="cuti" {{ old('kategori_jadwal') == 'cuti' ? 'selected' : '' }}>Cuti (Kuning)</option>

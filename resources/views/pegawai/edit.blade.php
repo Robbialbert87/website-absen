@@ -71,6 +71,10 @@
                                         <label class="form-check-label" for="kat_non_shift">Non Shift (Jadwal Tetap)</label>
                                     </div>
                                     <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="kategori_kerja" id="kat_non_shift_5_hari" value="non_shift_5_hari" {{ old('kategori_kerja', $pegawai->kategori_kerja) == 'non_shift_5_hari' ? 'checked' : '' }} required>
+                                        <label class="form-check-label" for="kat_non_shift_5_hari">Non Shift 5 Hari</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="kategori_kerja" id="kat_shift" value="shift" {{ old('kategori_kerja', $pegawai->kategori_kerja) == 'shift' ? 'checked' : '' }} required>
                                         <label class="form-check-label" for="kat_shift">Shift (Rotasi)</label>
                                     </div>
