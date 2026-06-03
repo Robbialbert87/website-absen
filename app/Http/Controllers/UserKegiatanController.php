@@ -78,6 +78,12 @@ class UserKegiatanController extends Controller
         $image_parts = explode(";base64,", $request->foto);
         $image_type_aux = explode("image/", $image_parts[0]);
         $image_type = $image_type_aux[1] ?? 'png';
+
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if (!in_array(strtolower($image_type), $allowed)) {
+            return response()->json(['success' => false, 'message' => 'Tipe file foto tidak diizinkan.'], 422);
+        }
+
         $image_base64 = base64_decode($image_parts[1]);
         $fileName = 'absensi/' . uniqid() . '.' . $image_type;
         

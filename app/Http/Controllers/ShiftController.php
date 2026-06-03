@@ -88,6 +88,7 @@ class ShiftController extends Controller
 
     public function destroy(Shift $shift)
     {
+        abort_unless(auth()->user()->hasAnyRole(['super_admin', 'admin']), 403);
         $shift->delete();
         return redirect()->route('shift.index')->with('success', 'Jadwal berhasil dihapus.');
     }

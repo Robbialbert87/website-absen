@@ -214,6 +214,19 @@
             border-color: var(--accent-border);
             color: var(--accent);
         }
+
+        @media (max-width: 768px) {
+            .btn-sm {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.875rem;
+            }
+            .table .btn {
+                min-height: 38px;
+            }
+            .sidebar-brand img {
+                width: 120px;
+            }
+        }
     </style>
 </head>
 
@@ -221,6 +234,7 @@
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
+        <button class="btn-close btn-close-white d-lg-none position-absolute top-0 end-0 mt-3 me-3" id="sidebarClose" aria-label="Close"></button>
         <div class="sidebar-brand">
             <img src="{{ asset('images/logo.png') }}" alt="Logo">
         </div>
@@ -278,17 +292,9 @@
 
             <div class="sidebar-section-title">Report</div>
             @if (auth()->user()->isAdmin())
-                <a href="{{ route('report.index', 'shift') }}"
-                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'shift')) ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice"></i> Report Jadwal Shift
-                </a>
-                <a href="{{ route('report.index', 'non_shift') }}"
-                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift')) ? 'active' : '' }}">
-                    <i class="fas fa-file-alt"></i> Report Jadwal Non Shift
-                </a>
-                <a href="{{ route('report.index', 'non_shift_5_hari') }}"
-                    class="sidebar-link {{ request()->fullUrlIs(route('report.index', 'non_shift_5_hari')) ? 'active' : '' }}">
-                    <i class="fas fa-file-alt"></i> Report Jadwal Non Shift 5 Hari
+                <a href="{{ route('report.index', 'semua') }}"
+                    class="sidebar-link {{ request()->routeIs('report.index') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice"></i> Report Jadwal
                 </a>
                 <a href="{{ route('cuti.index') }}"
                     class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
@@ -348,7 +354,7 @@
                 <div class="ms-auto d-flex align-items-center">
                     <span class="me-3 text-muted d-none d-md-block">Welcome,
                         <strong>{{ auth()->user()->name }}</strong>
-                        ({{ ucfirst(auth()->user()->role) }})</span>
+                        ({{ ucfirst(auth()->user()->getRoleNames()->first() ?? 'user') }})</span>
                     <div class="dropdown">
                         <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=1A7A6E&color=fff"
                             class="rounded-circle shadow-sm" width="40" height="40" data-bs-toggle="dropdown"
@@ -413,11 +419,18 @@
     <script>
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
 
     // Toggle sidebar
     sidebarToggle?.addEventListener('click', function(e) {
         e.stopPropagation();
         sidebar.classList.toggle('active');
+    });
+
+    // Close sidebar via close button
+    sidebarClose?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        sidebar.classList.remove('active');
     });
 
     // Prevent click inside sidebar from closing it

@@ -7,34 +7,44 @@
             <h1 class="h2 mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Monitoring Jadwal Pegawai</h1>
             <p class="text-muted mb-0">Pantau kelengkapan pengisian jadwal kerja bulanan setiap ruangan.</p>
         </div>
-        <div class="d-flex gap-2">
-            <form action="{{ route('monitoring.index') }}" method="GET" class="d-flex gap-2">
-                <select name="bulan" class="form-select border-0 shadow-sm" style="border-radius: 10px; width: 150px;">
-                    @for ($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}" {{ $stats['monitoring']['selected_month'] == $i ? 'selected' : '' }}>
-                            {{ Carbon\Carbon::create(null, $i, 1)->translatedFormat('F') }}
-                        </option>
-                    @endfor
-                </select>
-                <select name="tahun" class="form-select border-0 shadow-sm" style="border-radius: 10px; width: 100px;">
-                    @for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
-                        <option value="{{ $i }}" {{ $stats['monitoring']['selected_year'] == $i ? 'selected' : '' }}>
-                            {{ $i }}
-                        </option>
-                    @endfor
-                </select>
-                <select name="ruangan_id" class="form-select border-0 shadow-sm" style="border-radius: 10px; width: 200px;">
-                    <option value="">Semua Ruangan</option>
-                    @foreach($listRuangan as $r)
-                        <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
-                            {{ $r->nama_ruangan }}
-                        </option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 10px;">
-                    <i class="fas fa-filter me-2"></i> Filter
-                </button>
-            </form>
+        <div class="row g-2">
+            <div class="col-12">
+                <form action="{{ route('monitoring.index') }}" method="GET" class="row g-2">
+                    <div class="col-md-3 col-sm-6">
+                        <select name="bulan" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}" {{ $stats['monitoring']['selected_month'] == $i ? 'selected' : '' }}>
+                                    {{ Carbon\Carbon::create(null, $i, 1)->translatedFormat('F') }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <select name="tahun" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                            @for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
+                                <option value="{{ $i }}" {{ $stats['monitoring']['selected_year'] == $i ? 'selected' : '' }}>
+                                    {{ $i }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <select name="ruangan_id" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                            <option value="">Semua Ruangan</option>
+                            @foreach($listRuangan as $r)
+                                <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
+                                    {{ $r->nama_ruangan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm w-100" style="border-radius: 10px;">
+                            <i class="fas fa-filter me-2"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

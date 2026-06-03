@@ -1,7 +1,7 @@
 <div class="card shadow-sm border-0 position-relative" id="table-wrapper">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+            <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
                 <thead class="text-uppercase" style="background: var(--bg-alt); border-bottom: 2px solid var(--border);">
                     <tr class="small fw-bold" style="color: var(--text-2);">
                         {{ $head }}

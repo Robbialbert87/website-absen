@@ -23,7 +23,7 @@ class ReportController extends Controller
         
         if ($type === 'shift' || $type === 'non_shift' || $type === 'non_shift_5_hari') {
             $default_kategori_kerja = $type;
-        } elseif ($type !== 'all') {
+        } elseif ($type !== 'all' && $type !== 'semua') {
             $default_kategori_jadwal = $type;
         }
 
@@ -36,9 +36,10 @@ class ReportController extends Controller
             'kategori_jadwal' => $request->get('kategori_jadwal', $default_kategori_jadwal),
         ];
 
-        $pegawais = [];
         if ($filters['ruangan_id']) {
-            $pegawais = Pegawai::where('ruangan_id', $filters['ruangan_id'])->get();
+            $pegawais = Pegawai::where('ruangan_id', $filters['ruangan_id'])->where('status_aktif', 1)->get();
+        } else {
+            $pegawais = Pegawai::where('status_aktif', 1)->get();
         }
 
         return view('report.index', compact('ruangans', 'kategori_kerjas', 'pegawais', 'filters', 'type'));
@@ -85,7 +86,11 @@ class ReportController extends Controller
 
     public function getPegawaiByRuangan(Request $request)
     {
-        $pegawais = Pegawai::where('ruangan_id', $request->ruangan_id)->get(['id', 'nama', 'nip']);
+        $query = Pegawai::where('status_aktif', 1);
+        if ($request->ruangan_id) {
+            $query->where('ruangan_id', $request->ruangan_id);
+        }
+        $pegawais = $query->get(['id', 'nama', 'nip']);
         return response()->json($pegawais);
     }
 }

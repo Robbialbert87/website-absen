@@ -6,7 +6,13 @@
             <div class="col-12">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Report Jadwal {{ $type == 'non_shift' ? 'Non Shift' : ($type == 'non_shift_5_hari' ? 'Non Shift 5 Hari Kerja' : ucwords($type)) }}</h2>
+                        @php
+                            $title = 'Report Jadwal';
+                            if ($type === 'shift') $title = 'Report Jadwal Shift';
+                            elseif ($type === 'non_shift') $title = 'Report Jadwal Non Shift';
+                            elseif ($type === 'non_shift_5_hari') $title = 'Report Jadwal Non Shift 5 Hari';
+                        @endphp
+                        <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">{{ $title }}</h2>
                         <p class="text-muted mb-0">Export data jadwal pegawai ke format Excel.</p>
                     </div>
                 </div>
@@ -17,11 +23,6 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <form id="filterForm" action="{{ route('report.export') }}" method="GET">
-                    @if($type === 'shift' || $type === 'non_shift' || $type === 'non_shift_5_hari')
-                        <input type="hidden" name="kategori_kerja" value="{{ $type }}">
-                    @elseif($type !== 'all')
-                        <input type="hidden" name="kategori_jadwal" value="{{ $type }}">
-                    @endif
                     <div class="row g-3">
                         <div class="col-md-2">
                             <label class="form-label fw-600">Bulan</label>
@@ -56,20 +57,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        @if($type === 'all')
                         <div class="col-md-2">
-                            <label class="form-label fw-600">Kategori Kerja</label>
+                            <label class="form-label fw-600">Kategori</label>
                             <select name="kategori_kerja" id="kategori_kerja" class="form-select select2">
-                                <option value="">Semua</option>
-                                @foreach ($kategori_kerjas as $k)
-                                    <option value="{{ $k }}"
-                                        {{ $filters['kategori_kerja'] == $k ? 'selected' : '' }}>
-                                        {{ $k }}
-                                    </option>
-                                @endforeach
+                                <option value="">Semua Kategori</option>
+                                <option value="shift" {{ ($filters['kategori_kerja'] ?? '') === 'shift' ? 'selected' : '' }}>Shift</option>
+                                <option value="non_shift" {{ ($filters['kategori_kerja'] ?? '') === 'non_shift' ? 'selected' : '' }}>Non Shift</option>
+                                <option value="non_shift_5_hari" {{ ($filters['kategori_kerja'] ?? '') === 'non_shift_5_hari' ? 'selected' : '' }}>Non Shift 5 Hari</option>
                             </select>
                         </div>
-                        @endif
                         <div class="col-md-3">
                             <label class="form-label fw-600">Pegawai (Optional)</label>
                             <select name="pegawai_id" id="pegawai_id" class="form-select select2">
@@ -88,6 +84,9 @@
                             </button>
                             <button type="submit" class="btn btn-success rounded-pill px-4">
                                 <i class="fas fa-file-csv me-2"></i> Export CSV
+                            </button>
+                            <button type="button" id="btnReset" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-undo me-2"></i> Reset
                             </button>
                         </div>
                     </div>
@@ -149,6 +148,28 @@
                         $pegawaiSelect.trigger('change');
                     });
                 }
+            });
+
+            $('#btnReset').on('click', function() {
+                const now = new Date();
+                const bulan = String(now.getMonth() + 1).padStart(2, '0');
+                const tahun = now.getFullYear();
+
+                $('#bulan').val(bulan).trigger('change');
+                $('#tahun').val(tahun).trigger('change');
+                $('#ruangan_id').val('').trigger('change');
+                $('#kategori_kerja').val('').trigger('change');
+
+                const $pegawaiSelect = $('#pegawai_id');
+                $pegawaiSelect.empty().append('<option value="">Semua Pegawai</option>');
+                $.get("{{ route('report.pegawai') }}", { ruangan_id: '' }, function(data) {
+                    data.forEach(function(p) {
+                        $pegawaiSelect.append(`<option value="${p.id}">${p.nama} (${p.nip})</option>`);
+                    });
+                    $pegawaiSelect.trigger('change');
+                });
+
+                $('#previewContainer').hide();
             });
 
             $('#btnPreview').on('click', function() {
