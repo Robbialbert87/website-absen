@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4">
         <div>
             <h4 class="mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Jadwal Kerja Pegawai</h4>
             <nav aria-label="breadcrumb">
@@ -76,8 +76,8 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-2 text-end">
-                    <div class="d-flex gap-1 justify-content-end" style="padding-top: 1.5rem;">
+                <div class="col-12 col-md-2">
+                    <div class="d-flex flex-wrap gap-1 justify-content-start justify-content-md-end" style="padding-top: 1.5rem;">
                         <a href="{{ route('jadwal.export-excel', request()->all()) }}" target="_blank" class="btn btn-sm btn-outline-success px-2 py-1"
                             style="font-size: 0.75rem;" title="Export Excel">
                             <i class="fas fa-file-excel"></i>
@@ -304,64 +304,79 @@
             border-radius: 3px;
         }
 
-        #toggleHolidays {
+        #toggleHolidays, #toggleHolidaysMobile {
             cursor: pointer;
             box-shadow: none !important;
         }
-        #toggleHolidays:checked {
-            background-color: #198754 !important; /* Green */
+        #toggleHolidays:checked, #toggleHolidaysMobile:checked {
+            background-color: #198754 !important;
             border-color: #198754 !important;
         }
-        #toggleHolidays:not(:checked) {
-            background-color: #6c757d !important; /* Gray/Red */
+        #toggleHolidays:not(:checked), #toggleHolidaysMobile:not(:checked) {
+            background-color: #6c757d !important;
             border-color: #6c757d !important;
         }
     </style>
 
     <!-- Modal Calendar -->
     <div class="modal fade" id="modalCalendar" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white border-0 py-3">
-                    <h5 class="modal-title">
+                    <h6 class="modal-title fs-6 fs-md-5">
                         <i class="fas fa-calendar-check me-2"></i>
-                        Jadwal Kerja: <span id="calendarEmployeeName"></span>
-                    </h5>
-                    <div class="ms-auto me-3 d-flex gap-2 align-items-center">
-                        <div class="form-check form-switch me-2 mb-0" style="transform: scale(1.1); transform-origin: right;">
+                        <span id="calendarEmployeeName"></span>
+                    </h6>
+                    <!-- Desktop controls -->
+                    <div class="d-none d-md-flex gap-2 align-items-center flex-shrink-0 ms-2">
+                        <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" id="toggleHolidays" checked>
-                            <label class="form-check-label small fw-bold text-white text-uppercase" for="toggleHolidays" style="font-size: 10px; margin-top: 2px; cursor: pointer;">Libur</label>
+                            <label class="form-check-label small fw-bold text-white text-uppercase" for="toggleHolidays" style="font-size: 10px; cursor: pointer; white-space: nowrap;">Libur</label>
                         </div>
-                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-reset-individual">
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-reset-individual" style="white-space: nowrap;">
                             <i class="fas fa-undo me-1"></i> Reset Jadwal
                         </button>
                         @if (auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin'))
-                            <div class="d-none" id="autoFillIndividualContainer">
-                                <button type="button"
-                                    class="btn btn-light btn-sm px-2 btn-auto-fill-individual"
-                                    data-kategori="non_shift" style="font-size: 0.7rem;">
+                            <div class="d-none d-flex gap-1" id="autoFillIndividualContainerDesktop">
+                                <button type="button" class="btn btn-light btn-sm px-2 btn-auto-fill-individual" data-kategori="non_shift" style="font-size: 0.75rem; white-space: nowrap;">
                                     <i class="fas fa-magic me-1"></i> 6 Hari
                                 </button>
-                                <button type="button"
-                                    class="btn btn-outline-info btn-sm px-2 btn-auto-fill-individual-5-hari"
-                                    data-kategori="non_shift_5_hari" style="font-size: 0.7rem;">
+                                <button type="button" class="btn btn-outline-info btn-sm px-2 btn-auto-fill-individual-5-hari" data-kategori="non_shift_5_hari" style="font-size: 0.75rem; white-space: nowrap;">
                                     <i class="fas fa-magic me-1"></i> 5 Hari
                                 </button>
                             </div>
                         @endif
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- Mobile controls toolbar -->
+                <div class="bg-primary text-white px-3 pb-3 d-md-none border-0">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="toggleHolidaysMobile" checked>
+                            <label class="form-check-label small fw-bold text-white text-uppercase" for="toggleHolidaysMobile" style="font-size: 11px; cursor: pointer;">Libur</label>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-reset-individual" style="font-size: 0.8rem;">
+                            <i class="fas fa-undo me-1"></i> Reset
+                        </button>
+                        @if (auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin'))
+                            <div class="d-none d-flex gap-2" id="autoFillIndividualContainerMobile">
+                                <button type="button" class="btn btn-light btn-sm px-3 btn-auto-fill-individual" data-kategori="non_shift" style="font-size: 0.8rem;">
+                                    <i class="fas fa-magic me-1"></i> 6 Hari
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm px-3 btn-auto-fill-individual-5-hari" data-kategori="non_shift_5_hari" style="font-size: 0.8rem;">
+                                    <i class="fas fa-magic me-1"></i> 5 Hari
+                                </button>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="modal-body p-0">
-                    <div id="calendar" style="min-height: 600px;"></div>
+                    <div id="calendar"></div>
                 </div>
-                <div class="modal-footer bg-light border-0">
-                    <div class="me-auto">
-                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Klik tanggal untuk menambah/ubah
-                            jadwal. Klik event untuk menghapus.</small>
-                    </div>
-                    <button type="button" class="btn btn-secondary px-4 rounded-pill"
+                <div class="modal-footer bg-light border-0 py-2">
+                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Klik tanggal untuk atur jadwal.</small>
+                    <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill"
                         data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
@@ -370,7 +385,7 @@
 
     <!-- Modal Shift Picker -->
     <div class="modal fade" id="modalShiftPicker" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-dialog modal-sm modal-fullscreen-sm-down modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <h6 class="modal-title fw-bold">Pilih Jadwal</h6>
@@ -381,19 +396,19 @@
                     <div class="list-group list-group-flush border rounded">
                         @foreach ($shifts as $s)
                             <button type="button"
-                                class="list-group-item list-group-item-action py-2 d-flex align-items-center btn-select-shift"
+                                class="list-group-item list-group-item-action py-2 py-md-3 d-flex align-items-center btn-select-shift"
                                 data-shift-id="{{ $s->id }}" data-kategori="{{ $s->kategori_jadwal }}">
-                                <span class="badge me-3"
-                                    style="background-color: {{ $s->warna }}; width: 12px; height: 12px; border-radius: 50%;">&nbsp;</span>
+                                <span class="badge me-3 flex-shrink-0"
+                                    style="background-color: {{ $s->warna }}; width: 14px; height: 14px; border-radius: 50%;">&nbsp;</span>
                                 <div class="flex-grow-1">
                                     <div class="fw-bold small">{{ $s->nama_shift }}</div>
-                                    <small class="text-muted" style="font-size: 10px;">{{ substr($s->jam_masuk, 0, 5) }}
+                                    <small class="text-muted">{{ substr($s->jam_masuk, 0, 5) }}
                                         - {{ substr($s->jam_pulang, 0, 5) }}</small>
                                 </div>
                             </button>
                         @endforeach
                         <button type="button"
-                            class="list-group-item list-group-item-action py-2 text-danger text-center small fw-bold btn-delete-shift">
+                            class="list-group-item list-group-item-action py-3 text-danger text-center small fw-bold btn-delete-shift">
                             <i class="fas fa-trash-alt me-1"></i> Hapus Jadwal
                         </button>
                     </div>
@@ -455,6 +470,79 @@
         #calendar {
             padding: 20px;
         }
+
+        #calendar .fc .fc-timegrid-slot {
+            height: 2rem;
+        }
+
+        /* Responsive FullCalendar */
+        @media (max-width: 768px) {
+            #calendar {
+                padding: 12px;
+            }
+
+            .fc .fc-toolbar-title {
+                font-size: 1rem;
+            }
+
+            .fc .fc-button {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            .fc .fc-daygrid-day-number {
+                font-size: 0.75rem;
+                padding: 4px;
+            }
+
+            .fc .fc-col-header-cell-cushion {
+                font-size: 0.6rem;
+                padding: 4px 2px;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: 40px;
+            }
+
+            .fc-event {
+                font-size: 0.6rem;
+                padding: 1px 2px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #calendar {
+                padding: 8px;
+            }
+
+            .fc .fc-toolbar-title {
+                font-size: 0.9rem;
+            }
+
+            .fc .fc-button {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.4rem;
+            }
+
+            .fc .fc-daygrid-day-number {
+                font-size: 0.65rem;
+                padding: 2px;
+            }
+
+            .fc .fc-col-header-cell-cushion {
+                font-size: 0.55rem;
+                padding: 2px 1px;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: 32px;
+            }
+
+            .fc-event {
+                font-size: 0.5rem;
+                padding: 1px;
+            }
+        }
     </style>
 @endsection
 
@@ -477,8 +565,9 @@
             hasChanged = false; // Reset flag for new session
             $('#calendarEmployeeName').text(nama);
 
-            if (kategori === 'non_shift' || kategori === 'non_shift_5_hari') {
-                $('#autoFillIndividualContainer').removeClass('d-none');
+            const showAutoFill = (kategori === 'non_shift' || kategori === 'non_shift_5_hari');
+            $('#autoFillIndividualContainerDesktop, #autoFillIndividualContainerMobile').toggleClass('d-none', !showAutoFill);
+            if (showAutoFill) {
                 if (kategori === 'non_shift_5_hari') {
                     $('.btn-auto-fill-individual').addClass('d-none');
                     $('.btn-auto-fill-individual-5-hari').removeClass('d-none');
@@ -486,8 +575,6 @@
                     $('.btn-auto-fill-individual').removeClass('d-none');
                     $('.btn-auto-fill-individual-5-hari').addClass('d-none');
                 }
-            } else {
-                $('#autoFillIndividualContainer').addClass('d-none');
             }
 
             modalCalendar.show();
@@ -555,12 +642,14 @@
                 theme: 'bootstrap-5'
             });
 
-            $('#toggleHolidays').on('change', function() {
-                showHolidays = $(this).is(':checked');
+            function onToggleHoliday() {
+                showHolidays = $('#toggleHolidays').is(':checked') || $('#toggleHolidaysMobile').is(':checked');
+                $('#toggleHolidays, #toggleHolidaysMobile').prop('checked', showHolidays);
                 if (calendar) {
                     calendar.refetchEvents();
                 }
-            });
+            }
+            $('#toggleHolidays, #toggleHolidaysMobile').on('change', onToggleHoliday);
 
             $('.btn-atur-jadwal').on('click', function() {
                 const id = $(this).data('id');
@@ -579,14 +668,21 @@
             const eventsUrl  = '{{ url('jadwal/events') }}';
             const holidayUrl = '{{ route('api.holidays') }}';
 
+            const isMobile = window.innerWidth < 768;
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'id',
-                headerToolbar: {
+                headerToolbar: isMobile ? {
+                    left:   'title',
+                    center: '',
+                    right:  'prev,next'
+                } : {
                     left:   'prev,next today',
                     center: 'title',
                     right:  'dayGridMonth,dayGridWeek'
                 },
+                height: 'auto',
+                contentHeight: 'auto',
                 // Two event sources: employee schedule + holidays
                 eventSources: [
                     {

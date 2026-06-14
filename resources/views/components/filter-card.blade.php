@@ -1,11 +1,11 @@
 @props(['exportExcel' => null, 'exportPdf' => null, 'createRoute' => null, 'createText' => 'Tambah Data', 'title' => 'Master Data'])
 
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 gap-2">
     <div>
-        <h1 class="h3 mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: var(--text-1);">{{ $title }}</h1>
+        <h1 class="h4 h3-md mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: var(--text-1);">{{ $title }}</h1>
         <p class="text-muted small mb-0">Kelola dan pantau data {{ strtolower($title) }} Anda di sini.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-shrink-0">
         @if($exportPdf)
         <button type="button" class="btn btn-outline-danger border-0 rounded-pill px-3" onclick="exportData('pdf')" title="Export PDF">
             <i class="fas fa-file-pdf"></i>

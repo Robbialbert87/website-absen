@@ -78,7 +78,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 d-flex gap-2 mt-4">
+                        <div class="col-12 d-flex flex-wrap gap-2 mt-4">
                             <button type="button" id="btnPreview" class="btn btn-primary">
                                 <i class="fas fa-eye me-2"></i> Preview Data
                             </button>

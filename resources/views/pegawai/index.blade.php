@@ -43,7 +43,7 @@
         </x-filter-card>
 
         @hasanyrole('super_admin|admin')
-        <div class="d-flex gap-2 mb-3">
+        <div class="d-flex flex-wrap gap-2 mb-3">
             <a href="{{ route('pegawai.template.download') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-download me-1"></i> Template
             </a>

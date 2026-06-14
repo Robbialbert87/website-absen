@@ -216,6 +216,9 @@
         }
 
         @media (max-width: 768px) {
+            .main-content {
+                padding: 24px;
+            }
             .btn-sm {
                 padding: 0.4rem 0.6rem;
                 font-size: 0.875rem;
@@ -225,6 +228,31 @@
             }
             .sidebar-brand img {
                 width: 120px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 16px;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            .navbar {
+                padding: 10px 16px;
+            }
+            .sidebar-brand img {
+                width: 100px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .pagination-container .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .table {
+                font-size: 0.8rem;
             }
         }
     </style>

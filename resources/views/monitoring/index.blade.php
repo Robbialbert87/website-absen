@@ -2,49 +2,47 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="flex-column flex-md-row d-flex align-items-start align-items-md-center justify-content-between mb-4 gap-3">
         <div>
-            <h1 class="h2 mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Monitoring Jadwal Pegawai</h1>
+            <h1 class="h3 h2-sm mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Monitoring Jadwal Pegawai</h1>
             <p class="text-muted mb-0">Pantau kelengkapan pengisian jadwal kerja bulanan setiap ruangan.</p>
         </div>
-        <div class="row g-2">
-            <div class="col-12">
-                <form action="{{ route('monitoring.index') }}" method="GET" class="row g-2">
-                    <div class="col-md-3 col-sm-6">
-                        <select name="bulan" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ $stats['monitoring']['selected_month'] == $i ? 'selected' : '' }}>
-                                    {{ Carbon\Carbon::create(null, $i, 1)->translatedFormat('F') }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <select name="tahun" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
-                            @for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
-                                <option value="{{ $i }}" {{ $stats['monitoring']['selected_year'] == $i ? 'selected' : '' }}>
-                                    {{ $i }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-4 col-sm-6">
-                        <select name="ruangan_id" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
-                            <option value="">Semua Ruangan</option>
-                            @foreach($listRuangan as $r)
-                                <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
-                                    {{ $r->nama_ruangan }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <button type="submit" class="btn btn-primary px-4 shadow-sm w-100" style="border-radius: 10px;">
-                            <i class="fas fa-filter me-2"></i> Filter
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="w-100 w-md-auto">
+            <form action="{{ route('monitoring.index') }}" method="GET" class="row g-2">
+                <div class="col-6 col-md-3">
+                    <select name="bulan" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                        @for ($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}" {{ $stats['monitoring']['selected_month'] == $i ? 'selected' : '' }}>
+                                {{ Carbon\Carbon::create(null, $i, 1)->translatedFormat('F') }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="tahun" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                        @for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
+                            <option value="{{ $i }}" {{ $stats['monitoring']['selected_year'] == $i ? 'selected' : '' }}>
+                                {{ $i }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="col-8 col-md-4">
+                    <select name="ruangan_id" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                        <option value="">Semua Ruangan</option>
+                        @foreach($listRuangan as $r)
+                            <option value="{{ $r->id }}" {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>
+                                {{ $r->nama_ruangan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-4 col-md-2">
+                    <button type="submit" class="btn btn-primary px-3 px-md-4 shadow-sm w-100" style="border-radius: 10px;">
+                        <i class="fas fa-filter me-1 me-md-2"></i> Filter
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -63,11 +61,11 @@
     </div>
     @endif
 
-    <div class="row">
+    <div class="row g-3">
         <!-- Ruangan Lengkap Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
-                <div class="card-body p-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-body p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 rounded-3" style="background-color: rgba(40, 167, 69, 0.1);">
                             <i class="fas fa-check-double fs-4" style="color: #28a745;"></i>
@@ -81,9 +79,9 @@
         </div>
 
         <!-- Ruangan Belum Lengkap Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
-                <div class="card-body p-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-body p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 rounded-3" style="background-color: rgba(255, 193, 7, 0.1);">
                             <i class="fas fa-clock fs-4" style="color: #ffc107;"></i>
@@ -97,9 +95,9 @@
         </div>
 
         <!-- Total Pegawai Belum Dijadwalkan Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
-                <div class="card-body p-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-body p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 rounded-3" style="background-color: rgba(220, 53, 69, 0.1);">
                             <i class="fas fa-user-times fs-4" style="color: #dc3545;"></i>

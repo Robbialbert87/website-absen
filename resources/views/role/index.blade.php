@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Manajemen Role & Permission</h1>
-        <a href="{{ route('role.create') }}" class="btn btn-primary">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 gap-2">
+        <h1 class="h4 mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Manajemen Role & Permission</h1>
+        <a href="{{ route('role.create') }}" class="btn btn-primary flex-shrink-0">
             <i class="fas fa-plus me-1"></i> Tambah Role
         </a>
     </div>

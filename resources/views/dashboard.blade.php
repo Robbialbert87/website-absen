@@ -1,16 +1,16 @@
 @extends('layouts.app')
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex align-items-center justify-content-between mb-5">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 mb-sm-5">
         <div>
-            <h1 class="h2 mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Dashboard Statistics</h1>
+            <h1 class="h3 h2-sm mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Dashboard Statistics</h1>
             <p class="text-muted mb-0">Ringkasan data sistem manajemen absensi.</p>
         </div>
     </div>
-    <div class="row">
+    <div class="row g-3">
         <!-- Total Pegawai Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card p-3 border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border shadow-sm h-100" style="background-color: #FFFFFF; border-radius: 16px;">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="p-3 rounded-circle" style="background-color: rgba(26, 122, 110, 0.1);">
@@ -28,8 +28,8 @@
             </div>
         </div>
         <!-- Total Ruangan Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card p-3 border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border shadow-sm h-100" style="background-color: #FFFFFF; border-radius: 16px;">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="p-3 rounded-circle" style="background-color: rgba(42, 157, 143, 0.1);">
@@ -47,8 +47,8 @@
             </div>
         </div>
         <!-- Pegawai Cuti Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card p-3 border shadow-sm" style="background-color: #FFFFFF; border-radius: 16px;">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border shadow-sm h-100" style="background-color: #FFFFFF; border-radius: 16px;">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="p-3 rounded-circle" style="background-color: rgba(231, 76, 60, 0.1);">
@@ -58,7 +58,7 @@
                             <span class="text-muted small text-uppercase fw-bold">Data Pegawai Cuti</span>
                         </div>
                     </div>
-                    <div class="row text-center mt-3">
+                    <div class="row text-center mt-3 g-0">
                         <div class="col-6 border-end">
                             <a href="{{ route('cuti.index', ['bulan' => date('m'), 'tahun' => date('Y')]) }}" class="text-decoration-none">
                                 <div class="text-muted small mb-1">Hari Ini</div>

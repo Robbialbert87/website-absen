@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">Daftar Kegiatan</h1>
-            <p class="text-muted">Pilih kegiatan untuk melakukan absensi.</p>
+            <h1 class="h4 mb-1 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Daftar Kegiatan</h1>
+            <p class="text-muted small mb-0">Pilih kegiatan untuk melakukan absensi.</p>
         </div>
     </div>
 

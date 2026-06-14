@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Manajemen Kegiatan</h1>
-        <a href="{{ route('kegiatan.create') }}" class="btn text-white rounded-pill" style="background-color: #1A7A6E;">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 gap-2">
+        <h1 class="h4 mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Manajemen Kegiatan</h1>
+        <a href="{{ route('kegiatan.create') }}" class="btn text-white rounded-pill flex-shrink-0" style="background-color: #1A7A6E;">
             <i class="fas fa-plus me-1"></i> Tambah Kegiatan
         </a>
     </div>
