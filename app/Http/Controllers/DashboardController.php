@@ -37,6 +37,7 @@ class DashboardController extends Controller
                   ->orWhere('kode_shift', 'like', '%cuti%');
             });
 
+        $ruanganIds = collect();
         if ($user->hasRole('kepala_ruangan') && $user->pegawai_id) {
             $ruanganIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)->pluck('id');
             
@@ -66,6 +67,121 @@ class DashboardController extends Controller
             ->distinct()
             ->count('pegawai_id');
 
+        // --- Pegawai Hari Ini (kategorisasi per pegawai) ---
+        $pegawaiPerRuangan = [];
+        if (!$user->isAdmin()) {
+            $pegawaiQuery = Pegawai::with(['ruangan', 'jadwal'])
+                ->where('status_aktif', true);
+
+            if ($user->hasRole('kepala_ruangan') && $user->pegawai_id) {
+                if ($ruanganIds->isNotEmpty()) {
+                    $pegawaiQuery->whereIn('ruangan_id', $ruanganIds);
+                } else {
+                    $pegawaiQuery->where('ruangan_id', $user->pegawai->ruangan_id ?? null);
+                }
+            }
+
+            $allPegawai = $pegawaiQuery->get();
+        
+        // Get today's jadwal keyed by pegawai_id
+        $jadwalToday = JadwalPegawai::whereIn('pegawai_id', $allPegawai->pluck('id'))
+            ->whereDate('tanggal_masuk', '<=', $today)
+            ->whereDate('tanggal_pulang', '>=', $today)
+            ->with('shift')
+            ->get()
+            ->groupBy('pegawai_id');
+
+        // Check if today is holiday
+        $isHoliday = KalenderNasional::aktif()
+            ->whereDate('tanggal', $today)
+            ->exists();
+        $isSunday = $today->dayOfWeek === Carbon::SUNDAY;
+        $dayOfWeek = $today->dayOfWeek;
+
+        $pegawaiPerRuangan = [];
+        foreach ($allPegawai as $pegawai) {
+            $ruanganId = $pegawai->ruangan_id;
+            if (!$ruanganId || !$pegawai->ruangan) continue;
+
+            $jadwals = $jadwalToday->get($pegawai->id, collect());
+            $kategori = 'libur';
+            $jamMasuk = '-';
+            $jamPulang = '-';
+            $kodeShift = '-';
+            $namaShift = '-';
+
+            if ($jadwals->isNotEmpty()) {
+                $j = $jadwals->first();
+                $shiftKategori = $j->shift->kategori_jadwal ?? null;
+                $kodeShift = $j->kode_shift ?? ($j->shift->kode_shift ?? '-');
+                $namaShift = $j->shift->nama_shift ?? $kodeShift;
+                $jamMasuk = $j->jam_masuk ? Carbon::parse($j->jam_masuk)->format('H:i') : '-';
+                $jamPulang = $j->jam_pulang ? Carbon::parse($j->jam_pulang)->format('H:i') : '-';
+
+                $ks = strtoupper($kodeShift);
+                $kategori = match (true) {
+                    $shiftKategori === 'cuti'                 => 'cuti',
+                    $ks === 'P' || $ks === 'PAGI'             => 'pagi',
+                    $ks === 'S' || $ks === 'SIANG'            => 'siang',
+                    $ks === 'M' || $ks === 'MALAM'            => 'malam',
+                    $ks === 'L' || str_contains($ks, 'LIBUR') => 'libur',
+                    str_contains($ks, 'CUTI')                 => 'cuti',
+                    default                                   => 'pagi',
+                };
+            } else {
+                $isNonShift = ($pegawai->kategori_kerja === 'non_shift' || $pegawai->kategori_kerja === 'non_shift_5_hari');
+                if ($isNonShift) {
+                    $defaultShift = $pegawai->jadwal;
+                    $isWorkingDay = $this->isNonShiftWorkingDay($defaultShift, $dayOfWeek);
+                    if ($isWorkingDay && !$isHoliday && !$isSunday) {
+                        $kategori = 'pagi';
+                        $kodeShift = '-';
+                        $namaShift = 'Non Shift';
+                        $jamMasuk = $defaultShift ? Carbon::parse($defaultShift->jam_masuk)->format('H:i') : '-';
+                        $jamPulang = $defaultShift ? Carbon::parse($defaultShift->jam_pulang)->format('H:i') : '-';
+                    }
+                }
+            }
+
+            $pegawaiData = [
+                'nama'           => $pegawai->nama,
+                'jabatan'        => $pegawai->jabatan ?? '-',
+                'kategori_kerja' => $pegawai->kategori_kerja,
+                'kode_shift'     => $kodeShift,
+                'nama_shift'     => $namaShift,
+                'jam_masuk'      => $jamMasuk,
+                'jam_pulang'     => $jamPulang,
+            ];
+
+            if (!isset($pegawaiPerRuangan[$ruanganId])) {
+                $pegawaiPerRuangan[$ruanganId] = [
+                    'ruangan'  => $pegawai->ruangan,
+                    'total'    => 0,
+                    'counts'   => ['semua' => 0, 'pagi' => 0, 'siang' => 0, 'malam' => 0, 'cuti' => 0, 'libur' => 0],
+                    'kategori' => ['semua' => [], 'pagi' => [], 'siang' => [], 'malam' => [], 'cuti' => [], 'libur' => []],
+                ];
+            }
+
+            $pegawaiPerRuangan[$ruanganId]['kategori'][$kategori][] = $pegawaiData;
+            $pegawaiPerRuangan[$ruanganId]['counts'][$kategori]++;
+            $pegawaiPerRuangan[$ruanganId]['total']++;
+        }
+
+        // Combine 'semua' = pagi + siang + malam
+        foreach ($pegawaiPerRuangan as $ruanganId => &$room) {
+            $room['kategori']['semua'] = array_merge(
+                $room['kategori']['pagi'],
+                $room['kategori']['siang'],
+                $room['kategori']['malam']
+            );
+            $room['counts']['semua'] = $room['counts']['pagi'] + $room['counts']['siang'] + $room['counts']['malam'];
+        }
+        unset($room);
+
+        // Sort rooms alphabetically
+        usort($pegawaiPerRuangan, fn($a, $b) => strcmp($a['ruangan']->nama_ruangan, $b['ruangan']->nama_ruangan));
+        } // end if !isAdmin
+
         $stats = [
             'total_pegawai' => $queryPegawai->count(),
             'total_ruangan' => $queryRuangan->count(),
@@ -73,7 +189,7 @@ class DashboardController extends Controller
             'total_cuti_bulan_ini' => $totalCutiBulanIni,
         ];
 
-        return view('dashboard', compact('stats'));
+        return view('dashboard', compact('stats', 'pegawaiPerRuangan'));
     }
 
     public function monitoring(Request $request)
@@ -310,6 +426,28 @@ class DashboardController extends Controller
         }
 
         return response()->json($events);
+    }
+
+    private function isNonShiftWorkingDay($shift, int $dayOfWeek): bool
+    {
+        if (!$shift) return true;
+
+        $map = [
+            1 => 'is_senin',
+            2 => 'is_selasa',
+            3 => 'is_rabu',
+            4 => 'is_kamis',
+            5 => 'is_jumat',
+            6 => 'is_sabtu',
+            7 => 'is_minggu',
+        ];
+
+        $column = $map[$dayOfWeek] ?? null;
+        if ($column && $shift->getAttribute($column) !== null) {
+            return (bool) $shift->$column;
+        }
+
+        return true;
     }
 
     /**
