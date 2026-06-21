@@ -177,9 +177,9 @@
             <form action="{{ route('login') }}" method="POST">
                 @csrf
                 <div class="mb-3">
-                    <label for="login" class="form-label">Email atau NIP</label>
+                    <label for="login" class="form-label">NIP</label>
                     <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
-                        id="login" value="{{ old('login') }}" required autofocus placeholder="name@example.com atau NIP">
+                        id="login" value="{{ old('login') }}" required autofocus placeholder="NIP">
                     @error('login')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
