@@ -17,8 +17,8 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
     */
     public function model(array $row)
     {
-        // Clean NIP from non-breaking spaces and trim
-        $nip = trim(str_replace(["\xc2\xa0", "\xa0"], '', $row['nip']));
+        // Clean NIP from non-breaking spaces, trim, and remove all non-digit characters
+        $nip = preg_replace('/[^0-9]/', '', trim(str_replace(["\xc2\xa0", "\xa0"], '', $row['nip'])));
 
         // 1. Get or Create Ruangan
         $ruangan = Ruangan::firstOrCreate(

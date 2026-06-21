@@ -76,6 +76,8 @@ class PegawaiController extends Controller
             'status_aktif' => 'required|boolean',
         ]);
 
+        $validated['nip'] = preg_replace('/[^0-9]/', '', trim($validated['nip']));
+
         Pegawai::create($validated);
 
         return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
@@ -100,6 +102,8 @@ class PegawaiController extends Controller
             'shift_id' => 'nullable|exists:shifts,id',
             'status_aktif' => 'required|boolean',
         ]);
+
+        $validated['nip'] = preg_replace('/[^0-9]/', '', trim($validated['nip']));
 
         $pegawai->update($validated);
 

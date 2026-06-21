@@ -16,7 +16,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">NIP</label>
-                                <input type="text" name="nip" class="form-control @error('nip') is-invalid @enderror" value="{{ old('nip', $pegawai->nip) }}" required>
+                                <input type="text" name="nip" class="form-control @error('nip') is-invalid @enderror" value="{{ old('nip', $pegawai->nip) }}" required onblur="this.value = this.value.trim()">
                                 @error('nip')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

@@ -11,6 +11,12 @@ class Pegawai extends Model
     protected $table = 'pegawai';
     protected $fillable = ['nip', 'nama', 'ruangan_id', 'jabatan', 'kategori_kerja', 'shift_id', 'status_aktif'];
 
+    public function setNipAttribute($value)
+    {
+        // Remove all non-digit characters and trim spaces
+        $this->attributes['nip'] = preg_replace('/[^0-9]/', '', trim($value));
+    }
+
     public function ruangan()
     {
         return $this->belongsTo(Ruangan::class);
