@@ -49,6 +49,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
+            'username' => 'nullable|string|unique:users,username',
             'password' => 'required|min:6|confirmed',
             'roles' => 'required|array',
             'pegawai_id' => 'required|exists:pegawai,id|unique:users,pegawai_id',
@@ -72,6 +73,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'username' => $validated['username'] ?? null,
             'nip' => $pegawai->nip,
             'password' => Hash::make($password),
             'pegawai_id' => $validated['pegawai_id'],
@@ -95,6 +97,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'username' => 'nullable|string|unique:users,username,' . $user->id,
             'password' => 'nullable|min:6|confirmed',
             'roles' => 'required|array',
             'pegawai_id' => 'required|exists:pegawai,id|unique:users,pegawai_id,' . $user->id,
@@ -110,6 +113,7 @@ class UserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'username' => $validated['username'] ?? null,
             'nip' => $pegawai->nip,
             'pegawai_id' => $validated['pegawai_id'],
         ]);

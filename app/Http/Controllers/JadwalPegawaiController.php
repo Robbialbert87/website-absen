@@ -23,7 +23,7 @@ class JadwalPegawaiController extends Controller
         $user = auth()->user();
         $query = Ruangan::query();
 
-        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+        if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
             $query->where(function ($q) use ($user) {
                 $q->where('kepala_pegawai_id', $user->pegawai_id)
                     ->orWhere('id', $user->ruangan_id);
@@ -32,7 +32,7 @@ class JadwalPegawaiController extends Controller
 
         $ruangans = $query->get();
         
-        $default_ruangan = ($user->isAdmin() || $user->hasRole('super-admin')) ? 'all' : $ruangans->first()?->id;
+        $default_ruangan = ($user->isAdmin() || $user->hasRole('super_admin')) ? 'all' : $ruangans->first()?->id;
         $selected_ruangan_id = $request->get('ruangan_id', $default_ruangan);
 
         $search = $request->get('search');
@@ -48,8 +48,8 @@ class JadwalPegawaiController extends Controller
 
         $pegawaiQuery = Pegawai::with('ruangan');
 
-        // jika bukan admin/super-admin
-        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+        // jika bukan admin/super_admin
+        if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
             // Ambil ID ruangan yang diperbolehkan (ruangan sendiri + ruangan yang dikepalai)
             $allowedRoomIds = $ruangans->pluck('id')->toArray();
             $pegawaiQuery->whereIn('ruangan_id', $allowedRoomIds);
@@ -206,7 +206,7 @@ class JadwalPegawaiController extends Controller
         $kategori = $request->kategori ?: 'non_shift';
 
         // Permission check
-        if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
+        if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
             $allowedRoomIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                 ->orWhere('id', $user->ruangan_id)
                 ->pluck('id')
@@ -259,7 +259,7 @@ class JadwalPegawaiController extends Controller
         } elseif ($request->ruangan_id && $request->ruangan_id !== 'all') {
             $query->where('ruangan_id', $request->ruangan_id);
         } elseif ($request->ruangan_id === 'all') {
-            if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
+            if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
                 $query->whereIn('ruangan_id', $allowedRoomIds);
             }
         } else {
@@ -385,7 +385,7 @@ class JadwalPegawaiController extends Controller
 
         if ($request->pegawai_id) {
             // Permission check for individual reset
-            if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
+            if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
                 $pegawai = Pegawai::find($request->pegawai_id);
                 $allowedRoomIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                     ->orWhere('id', $user->ruangan_id)
@@ -400,7 +400,7 @@ class JadwalPegawaiController extends Controller
         } elseif ($request->ruangan_id) {
             if ($request->ruangan_id !== 'all') {
                 // Permission check for room reset
-                if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
+                if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
                     $allowedRoomIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                         ->orWhere('id', $user->ruangan_id)
                         ->pluck('id')
@@ -413,7 +413,7 @@ class JadwalPegawaiController extends Controller
                 $query->where('ruangan_id', $request->ruangan_id);
             } else {
                 // Handle 'all' rooms
-                if (!$user->isAdmin() && !$user->hasRole('super-admin')) {
+                if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
                     $allowedRoomIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                         ->orWhere('id', $user->ruangan_id)
                         ->pluck('id')
@@ -439,7 +439,7 @@ class JadwalPegawaiController extends Controller
         $user = auth()->user();
         $query = Ruangan::query();
 
-        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+        if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
             $query->where(function ($q) use ($user) {
                 $q->where('kepala_pegawai_id', $user->pegawai_id)
                     ->orWhere('id', $user->ruangan_id);
@@ -603,7 +603,7 @@ class JadwalPegawaiController extends Controller
         $user = auth()->user();
         $query = Ruangan::query();
 
-        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+        if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
             $query->where(function ($q) use ($user) {
                 $q->where('kepala_pegawai_id', $user->pegawai_id)
                     ->orWhere('id', $user->ruangan_id);
@@ -612,7 +612,7 @@ class JadwalPegawaiController extends Controller
 
         $ruangans = $query->get();
         
-        $default_ruangan = ($user->isAdmin() || $user->hasRole('super-admin')) ? 'all' : $ruangans->first()?->id;
+        $default_ruangan = ($user->isAdmin() || $user->hasRole('super_admin')) ? 'all' : $ruangans->first()?->id;
         $selected_ruangan_id = $request->get('ruangan_id', $default_ruangan);
 
         $search = $request->get('search');
@@ -628,8 +628,8 @@ class JadwalPegawaiController extends Controller
 
         $pegawaiQuery = Pegawai::with('ruangan');
 
-        // jika bukan admin/super-admin
-        if (! $user->hasRole('admin') && ! $user->hasRole('super-admin')) {
+        // jika bukan admin/super_admin
+        if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
             // Ambil ID ruangan yang diperbolehkan (ruangan sendiri + ruangan yang dikepalai)
             $allowedRoomIds = $ruangans->pluck('id')->toArray();
             $pegawaiQuery->whereIn('ruangan_id', $allowedRoomIds);

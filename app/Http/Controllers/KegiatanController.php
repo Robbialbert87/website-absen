@@ -72,6 +72,7 @@ class KegiatanController extends Controller
 
     public function destroy(Kegiatan $kegiatan)
     {
+        abort_unless(auth()->user()->hasAnyRole(['super_admin', 'admin']), 403, 'Akses ditolak.');
         $kegiatan->delete();
         return redirect()->route('kegiatan.index')->with('success', 'Kegiatan berhasil dihapus.');
     }

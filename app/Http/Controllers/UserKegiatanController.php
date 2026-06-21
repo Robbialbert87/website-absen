@@ -34,9 +34,9 @@ class UserKegiatanController extends Controller
         $kegiatan = Kegiatan::findOrFail($id);
         
         $request->validate([
-            'foto' => 'required',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'foto' => 'required|string|max:5242880',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
 
         $pegawai_id = Auth::user()->pegawai_id;
@@ -75,9 +75,20 @@ class UserKegiatanController extends Controller
             $status = 'terlambat';
         }
 
+        // Validate base64 image format and type
         $image_parts = explode(";base64,", $request->foto);
+        if (count($image_parts) != 2) {
+            return response()->json(['success' => false, 'message' => 'Format gambar tidak valid.'], 422);
+        }
+
         $image_type_aux = explode("image/", $image_parts[0]);
         $image_type = $image_type_aux[1] ?? 'png';
+        
+        // Validate image type
+        $allowed_types = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+        if (!in_array(strtolower($image_type), $allowed_types)) {
+            return response()->json(['success' => false, 'message' => 'Tipe gambar harus: ' . implode(', ', $allowed_types)], 422);
+        }
 
         $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         if (!in_array(strtolower($image_type), $allowed)) {

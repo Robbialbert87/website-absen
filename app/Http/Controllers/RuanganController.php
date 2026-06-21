@@ -86,6 +86,7 @@ class RuanganController extends Controller
 
     public function destroy(Ruangan $ruangan)
     {
+        abort_unless(auth()->user()->hasAnyRole(['super_admin', 'admin']), 403, 'Akses ditolak.');
         $ruangan->delete();
         return redirect()->route('ruangan.index')->with('success', 'Ruangan berhasil dihapus.');
     }

@@ -39,7 +39,7 @@ class DataCutiController extends Controller
         // Ruangan Filter
         if ($ruangan_id && $ruangan_id !== 'all') {
             $query->where('ruangan_id', $ruangan_id);
-        } elseif (!$user->hasRole('admin') && !$user->hasRole('super-admin')) {
+        } elseif (!$user->hasRole('admin') && !$user->hasRole('super_admin')) {
             // Limited access for non-admin
             $allowedRoomIds = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                 ->orWhere('id', $user->ruangan_id)
@@ -84,7 +84,7 @@ class DataCutiController extends Controller
         );
 
         $ruangans = Ruangan::all();
-        if (!$user->hasRole('admin') && !$user->hasRole('super-admin')) {
+        if (!$user->hasRole('admin') && !$user->hasRole('super_admin')) {
             $ruangans = Ruangan::where('kepala_pegawai_id', $user->pegawai_id)
                 ->orWhere('id', $user->ruangan_id)
                 ->get();
