@@ -23,6 +23,11 @@ class AuthController extends Controller
         ]);
 
         $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        
+        // Check if login is NIP (all digits)
+        if (ctype_digit($request->login)) {
+            $loginType = 'nip';
+        }
 
         $credentials = [
             $loginType => $request->login,

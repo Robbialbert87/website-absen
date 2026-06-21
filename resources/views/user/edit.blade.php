@@ -32,7 +32,7 @@
                             <select name="pegawai_id" id="pegawai_id" class="form-select select2 @error('pegawai_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Pegawai --</option>
                                 @foreach($pegawai as $p)
-                                    <option value="{{ $p->id }}" {{ old('pegawai_id', $user->pegawai_id) == $p->id ? 'selected' : '' }}>
+                                    <option value="{{ $p->id }}" data-nip="{{ $p->nip }}" {{ old('pegawai_id', $user->pegawai_id) == $p->id ? 'selected' : '' }}>
                                         {{ $p->nama }} ({{ $p->nip }})
                                     </option>
                                 @endforeach
@@ -40,10 +40,11 @@
                             @error('pegawai_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small id="nip-display" class="form-text text-muted">NIP: <strong id="nip-value">{{ $user->pegawai->nip ?? '-' }}</strong></small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password (Kosongkan jika tidak diganti)</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror">
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password-input">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -51,6 +52,15 @@
                         <div class="mb-3">
                             <label class="form-label">Konfirmasi Password</label>
                             <input type="password" name="password_confirmation" class="form-control">
+                        </div>
+                        <div class="mb-3" id="reset-nip-section" style="display: none;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="reset_password_to_nip" id="reset_password_to_nip" value="1">
+                                <label class="form-check-label" for="reset_password_to_nip">
+                                    Reset Password ke NIP (<span id="nip-for-reset">{{ $user->pegawai->nip ?? '-' }}</span>)
+                                </label>
+                            </div>
+                            <small class="form-text text-muted d-block mt-1">Centang ini untuk mengganti password dengan NIP Pegawai</small>
                         </div>
                         <div class="mb-4">
                             <label class="form-label d-block">Roles</label>
@@ -85,6 +95,35 @@
             placeholder: '-- Pilih Pegawai --',
             allowClear: true
         });
+
+        // Update NIP display when pegawai is selected
+        $('#pegawai_id').on('change', function() {
+            const nip = $(this).find('option:selected').data('nip');
+            if (nip) {
+                $('#nip-value').text(nip);
+                $('#nip-for-reset').text(nip);
+            }
+            updateResetNipSection();
+        });
+
+        // Update reset NIP section visibility when roles are changed
+        $('input[name="roles[]"]').on('change', function() {
+            updateResetNipSection();
+        });
+
+        function updateResetNipSection() {
+            const isKepalaRuangan = $('input[name="roles[]"][value="kepala_ruangan"]').is(':checked');
+            
+            if (isKepalaRuangan) {
+                $('#reset-nip-section').show();
+            } else {
+                $('#reset-nip-section').hide();
+                $('#reset_password_to_nip').prop('checked', false);
+            }
+        }
+
+        // Check initial state
+        updateResetNipSection();
     });
 </script>
 @endpush

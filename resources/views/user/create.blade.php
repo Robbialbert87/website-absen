@@ -31,7 +31,7 @@
                             <select name="pegawai_id" id="pegawai_id" class="form-select select2 @error('pegawai_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Pegawai --</option>
                                 @foreach($pegawai as $p)
-                                    <option value="{{ $p->id }}" {{ old('pegawai_id') == $p->id ? 'selected' : '' }}>
+                                    <option value="{{ $p->id }}" data-nip="{{ $p->nip }}" {{ old('pegawai_id') == $p->id ? 'selected' : '' }}>
                                         {{ $p->nama }} ({{ $p->nip }})
                                     </option>
                                 @endforeach
@@ -39,13 +39,15 @@
                             @error('pegawai_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small id="nip-display" class="form-text text-muted d-none">NIP: <strong id="nip-value"></strong></small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password-input" required>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small id="password-hint" class="form-text text-muted d-none"></small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Konfirmasi Password</label>
@@ -84,6 +86,39 @@
             placeholder: '-- Pilih Pegawai --',
             allowClear: true
         });
+
+        // Update NIP display when pegawai is selected
+        $('#pegawai_id').on('change', function() {
+            const nip = $(this).find('option:selected').data('nip');
+            if (nip) {
+                $('#nip-display').removeClass('d-none');
+                $('#nip-value').text(nip);
+            } else {
+                $('#nip-display').addClass('d-none');
+            }
+            updatePasswordHint();
+        });
+
+        // Update password hint when roles are changed
+        $('input[name="roles[]"]').on('change', function() {
+            updatePasswordHint();
+        });
+
+        function updatePasswordHint() {
+            const isKepalaRuangan = $('input[name="roles[]"][value="kepala_ruangan"]').is(':checked');
+            const nip = $('#pegawai_id').find('option:selected').data('nip');
+            
+            if (isKepalaRuangan && nip) {
+                $('#password-hint').removeClass('d-none').html(`<span class="text-info">💡 Password untuk Kepala Ruangan akan otomatis diisi dengan NIP: <strong>${nip}</strong></span>`);
+                $('#password-input').prop('disabled', true).val('(NIP akan digunakan)');
+            } else {
+                $('#password-hint').addClass('d-none');
+                $('#password-input').prop('disabled', false).val('');
+            }
+        }
+
+        // Check initial state
+        updatePasswordHint();
     });
 </script>
 @endpush

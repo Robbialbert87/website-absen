@@ -57,10 +57,23 @@ class UserController extends Controller
             'pegawai_id.unique' => 'Pegawai ini sudah memiliki akun user.',
         ]);
 
+        // Get pegawai data to access NIP
+        $pegawai = Pegawai::find($validated['pegawai_id']);
+        
+        // Check if role includes kepala_ruangan
+        $isKepalaRuangan = in_array('kepala_ruangan', $validated['roles']);
+        
+        // If kepala_ruangan, use NIP as password
+        $password = $validated['password'];
+        if ($isKepalaRuangan) {
+            $password = $pegawai->nip;
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'nip' => $pegawai->nip,
+            'password' => Hash::make($password),
             'pegawai_id' => $validated['pegawai_id'],
         ]);
 
@@ -85,15 +98,27 @@ class UserController extends Controller
             'password' => 'nullable|min:6|confirmed',
             'roles' => 'required|array',
             'pegawai_id' => 'required|exists:pegawai,id|unique:users,pegawai_id,' . $user->id,
+            'reset_password_to_nip' => 'nullable|boolean',
         ]);
+
+        // Get pegawai data to access NIP
+        $pegawai = Pegawai::find($validated['pegawai_id']);
+        
+        // Check if role includes kepala_ruangan
+        $isKepalaRuangan = in_array('kepala_ruangan', $validated['roles']);
 
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'nip' => $pegawai->nip,
             'pegawai_id' => $validated['pegawai_id'],
         ]);
 
-        if ($request->filled('password')) {
+        // Handle password update
+        if ($request->filled('reset_password_to_nip') && $isKepalaRuangan) {
+            // Reset password to NIP for kepala_ruangan
+            $user->update(['password' => Hash::make($pegawai->nip)]);
+        } elseif ($request->filled('password')) {
             $user->update(['password' => Hash::make($validated['password'])]);
         }
 
