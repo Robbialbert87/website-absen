@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\ShiftController;
@@ -18,9 +17,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'force_change_password'])->group(function () {
     // Password Change
