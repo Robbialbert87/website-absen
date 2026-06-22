@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,15 +29,29 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $ip = $this->ip();
+        $email = $this->email;
+
+        $success = Auth::attempt(['email' => $email, 'password' => $this->password], $this->boolean('remember'));
+
+        if ($success) {
+            RateLimiter::clear($this->throttleKey());
+            Log::channel('login')->info('Login email berhasil', [
+                'email' => $email,
+                'ip' => $ip,
+                'user_id' => Auth::id(),
+            ]);
+        } else {
             RateLimiter::hit($this->throttleKey());
+            Log::channel('login')->warning('Login email gagal', [
+                'email' => $email,
+                'ip' => $ip,
+            ]);
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
-
-        RateLimiter::clear($this->throttleKey());
     }
 
     public function ensureIsNotRateLimited(): void
@@ -46,6 +61,12 @@ class LoginRequest extends FormRequest
         }
 
         event(new Lockout($this));
+
+        Log::channel('login')->warning('Login email terkunci (rate limit)', [
+            'email' => $this->email,
+            'ip' => $this->ip(),
+            'seconds' => RateLimiter::availableIn($this->throttleKey()),
+        ]);
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 

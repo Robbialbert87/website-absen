@@ -127,6 +127,14 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'login' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/login.log'),
+            'level' => 'debug',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];
