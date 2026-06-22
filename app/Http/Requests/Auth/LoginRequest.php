@@ -32,7 +32,9 @@ class LoginRequest extends FormRequest
         $ip = $this->ip();
         $email = $this->email;
 
-        $success = Auth::attempt(['email' => $email, 'password' => $this->password], $this->boolean('remember'));
+        $success = Auth::attempt(['email' => $email, 'password' => $this->password], $this->boolean('remember'))
+                || Auth::attempt(['username' => $email, 'password' => $this->password], $this->boolean('remember'))
+                || Auth::attempt(['nip' => $email, 'password' => $this->password], $this->boolean('remember'));
 
         if ($success) {
             RateLimiter::clear($this->throttleKey());
