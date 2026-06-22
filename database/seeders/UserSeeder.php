@@ -15,7 +15,8 @@ class UserSeeder extends Seeder
         $admin = \App\Models\User::create([
             'name' => 'Administrator',
             'email' => 'admin@admin.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => \Illuminate\Support\Facades\Hash::make('admin'),
+            'password_changed_at' => now(),
         ]);
 
         $admin->assignRole('admin');
