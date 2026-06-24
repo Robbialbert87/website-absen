@@ -389,7 +389,7 @@
                             style="cursor:pointer">
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2"
                             style="border-radius: 12px;">
-                            <li><a class="dropdown-item py-2 px-3" href="#"><i class="fas fa-user me-2"></i>
+                            <li><a class="dropdown-item py-2 px-3" href="{{ route('profile.index') }}"><i class="fas fa-user me-2"></i>
                                     Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider mx-2">

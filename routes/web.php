@@ -12,6 +12,7 @@ use App\Http\Controllers\JadwalPegawaiController;
 use App\Http\Controllers\ImportRuanganController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DataCutiController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -38,6 +39,10 @@ Route::middleware(['auth', 'force_change_password'])->group(function () {
     Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring.index');
     Route::get('/dashboard/monitoring-detail', [DashboardController::class, 'getMonitoringDetail'])->name('dashboard.monitoring-detail');
     Route::get('/api/holidays', [DashboardController::class, 'getHolidaysApi'])->name('api.holidays');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.index');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     // Ruangan
     Route::middleware(['permission:manage-ruangan'])->group(function () {
