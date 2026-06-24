@@ -13,6 +13,7 @@ use App\Http\Controllers\ImportRuanganController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DataCutiController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AbsensiReportController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -101,6 +102,13 @@ Route::middleware(['auth', 'force_change_password'])->group(function () {
         Route::get('/report-preview', [ReportController::class, 'preview'])->name('report.preview');
         Route::get('/report-export', [ReportController::class, 'export'])->name('report.export');
         Route::get('/report-pegawai', [ReportController::class, 'getPegawaiByRuangan'])->name('report.pegawai');
+    });
+
+    // Absensi Kegiatan
+    Route::middleware(['role:admin|super_admin'])->group(function () {
+        Route::get('/report-absensi', [AbsensiReportController::class, 'index'])->name('report.absensi.index');
+        Route::get('/report-absensi/preview', [AbsensiReportController::class, 'preview'])->name('report.absensi.preview');
+        Route::get('/report-absensi/export/{format?}', [AbsensiReportController::class, 'export'])->name('report.absensi.export');
     });
 
     // User/General Routes

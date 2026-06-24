@@ -65,8 +65,9 @@ class UserKegiatanController extends Controller
             cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
         $distance = $angle * 6371000;
 
-        if ($distance > $kegiatan->radius_meter) {
-            return response()->json(['success' => false, 'message' => 'Anda berada di luar radius (' . round($distance) . ' meter dari lokasi). Maksimal ' . $kegiatan->radius_meter . ' meter.'], 400);
+        $toleransi = 25;
+        if ($distance > $kegiatan->radius_meter + $toleransi) {
+            return response()->json(['success' => false, 'message' => 'Anda berada di luar radius (' . round($distance) . ' meter dari lokasi). Maksimal ' . $kegiatan->radius_meter . ' + ' . $toleransi . ' meter.'], 400);
         }
 
         $status = 'hadir';

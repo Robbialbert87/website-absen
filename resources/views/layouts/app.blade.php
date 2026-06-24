@@ -324,6 +324,10 @@
                     class="sidebar-link {{ request()->routeIs('report.index') ? 'active' : '' }}">
                     <i class="fas fa-file-invoice"></i> Report Jadwal
                 </a>
+                <a href="{{ route('report.absensi.index') }}"
+                    class="sidebar-link {{ request()->routeIs('report.absensi.*') ? 'active' : '' }}">
+                    <i class="fas fa-clipboard-check"></i> Absensi Kegiatan
+                </a>
                 <a href="{{ route('cuti.index') }}"
                     class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
                     <i class="fas fa-user-clock"></i> Data Cuti

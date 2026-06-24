@@ -88,12 +88,12 @@
                         <div class="col-md-4">
                             <label class="form-label">Latitude</label>
                             <input type="text" id="latitude" name="latitude" class="form-control bg-light" required readonly
-                                value="{{ old('latitude', '-1.610122') }}">
+                                value="{{ old('latitude', '-1.6411802') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Longitude</label>
                             <input type="text" id="longitude" name="longitude" class="form-control bg-light" required readonly
-                                value="{{ old('longitude', '103.613411') }}">
+                                value="{{ old('longitude', '103.5793161') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Radius (Meter)</label>
@@ -117,8 +117,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const RSUD_LAT = -1.610122;
-    const RSUD_LON = 103.613411;
+    const RSUD_LAT = -1.6411802;
+    const RSUD_LON = 103.5793161;
 
     const inputLat    = document.getElementById('latitude');
     const inputLon    = document.getElementById('longitude');

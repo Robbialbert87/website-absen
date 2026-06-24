@@ -151,20 +151,22 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // 2. Coba GPS
+    const TOLERANSI = 25;
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(pos) {
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
                 const dist = haversine(userLat, userLon, KEGIATAN_LAT, KEGIATAN_LON);
-                const ok   = dist <= RADIUS;
+                const ok   = dist <= (RADIUS + TOLERANSI);
                 locationStatus.innerHTML = ok
                     ? `<span class="status-badge bg-success text-white"><i class="fas fa-check-circle"></i> Dalam radius (${Math.round(dist)}m)</span>`
-                    : `<span class="status-badge bg-danger text-white"><i class="fas fa-times-circle"></i> Luar radius (${Math.round(dist)}m, maks ${RADIUS}m)</span>`;
+                    : `<span class="status-badge bg-danger text-white"><i class="fas fa-times-circle"></i> Luar radius (${Math.round(dist)}m, maks ${RADIUS}+${TOLERANSI}m)</span>`;
                 checkReady();
             },
             function() { showMapFallback(); },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
         );
     } else {
         showMapFallback();
@@ -200,10 +202,10 @@ document.addEventListener("DOMContentLoaded", function() {
             mapCoordsInfo.classList.remove('d-none');
 
             const dist = haversine(userLat, userLon, KEGIATAN_LAT, KEGIATAN_LON);
-            const ok   = dist <= RADIUS;
+            const ok   = dist <= (RADIUS + TOLERANSI);
             locationStatus.innerHTML = ok
                 ? `<span class="status-badge bg-success text-white"><i class="fas fa-check-circle"></i> Dalam radius (${Math.round(dist)}m)</span>`
-                : `<span class="status-badge bg-danger text-white"><i class="fas fa-times-circle"></i> Luar radius (${Math.round(dist)}m, maks ${RADIUS}m)</span>`;
+                : `<span class="status-badge bg-danger text-white"><i class="fas fa-times-circle"></i> Luar radius (${Math.round(dist)}m, maks ${RADIUS}+${TOLERANSI}m)</span>`;
             checkReady();
         });
     }
