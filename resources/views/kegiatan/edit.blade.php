@@ -111,6 +111,67 @@
                     </div>
                 </div>
 
+                {{-- === TIPE KEGIATAN & PEMILIHAN PEGAWAI === --}}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Tipe Kegiatan</label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipe" id="tipe_kegiatan" value="kegiatan"
+                                {{ $kegiatan->tipe === 'kegiatan' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="tipe_kegiatan">Kegiatan Biasa (pilih peserta)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipe" id="tipe_apel" value="apel"
+                                {{ $kegiatan->tipe === 'apel' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="tipe_apel">Apel Pagi (semua pegawai)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pegawai-selection" class="mb-4" style="{{ $kegiatan->tipe === 'apel' ? 'display: none;' : '' }}">
+                    <label class="form-label fw-bold">Pilih Peserta Kegiatan</label>
+                    <div class="mb-2">
+                        <input type="text" id="filter-pegawai" class="form-control form-control-sm" style="max-width: 300px;" placeholder="Cari nama pegawai...">
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px;">
+                        @foreach ($ruangans as $ruangan)
+                            <div class="mb-2 ruangan-group">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <input type="checkbox" class="select-all-ruangan" data-ruangan="{{ $ruangan->id }}">
+                                    <strong class="small">{{ $ruangan->nama_ruangan }}</strong>
+                                    <span class="text-muted small">({{ $ruangan->pegawai->count() }} pegawai)</span>
+                                </div>
+                                <div class="ms-3 row g-1" data-ruangan="{{ $ruangan->id }}">
+                                    @forelse ($ruangan->pegawai->where('status_aktif', 1) as $pegawai)
+                                        <div class="col-md-4 col-sm-6 pegawai-item">
+                                            <div class="form-check">
+                                                <input class="form-check-input pegawai-checkbox" type="checkbox"
+                                                    name="pegawai_ids[]" value="{{ $pegawai->id }}"
+                                                    id="pegawai-{{ $pegawai->id }}"
+                                                    data-nama="{{ strtolower($pegawai->nama) }}"
+                                                    {{ in_array($pegawai->id, $selectedPegawaiIds) ? 'checked' : '' }}>
+                                                <label class="form-check-label small" for="pegawai-{{ $pegawai->id }}">
+                                                    {{ $pegawai->nama }} <code class="text-muted">{{ $pegawai->nip }}</code>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="col-12"><span class="text-muted small">Tidak ada pegawai aktif.</span></div>
+                                    @endforelse
+                                </div>
+                                @if (!$loop->last)
+                                    <hr class="my-2">
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" id="select-all-all" class="btn btn-outline-primary btn-sm rounded-pill">Pilih Semua</button>
+                        <button type="button" id="deselect-all-all" class="btn btn-outline-secondary btn-sm rounded-pill">Hapus Semua</button>
+                        <span id="selected-count" class="small text-muted ms-2">0 pegawai dipilih</span>
+                    </div>
+                </div>
+
                 <div class="text-end">
                     <a href="{{ route('kegiatan.index') }}" class="btn btn-secondary">Batal</a>
                     <button type="submit" class="btn text-white" style="background-color: #1A7A6E;">Update Kegiatan</button>
@@ -226,6 +287,81 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     updateGmapsLink();
+
+    // === TIPE KEGIATAN TOGGLE ===
+    const tipeKegiatan = document.getElementById('tipe_kegiatan');
+    const tipeApel = document.getElementById('tipe_apel');
+    const pegawaiSelection = document.getElementById('pegawai-selection');
+
+    function togglePegawaiSelection() {
+        pegawaiSelection.style.display = tipeKegiatan.checked ? 'block' : 'none';
+    }
+    tipeKegiatan.addEventListener('change', togglePegawaiSelection);
+    tipeApel.addEventListener('change', togglePegawaiSelection);
+
+    // === SELECT ALL PER RUANGAN ===
+    document.querySelectorAll('.select-all-ruangan').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            const ruangan = this.dataset.ruangan;
+            const container = document.querySelector(`.row[data-ruangan="${ruangan}"]`);
+            container.querySelectorAll('.pegawai-checkbox').forEach(function(c) {
+                c.checked = cb.checked;
+            });
+            updateSelectedCount();
+        });
+    });
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.pegawai-checkbox:checked').length;
+        const el = document.getElementById('selected-count');
+        if (el) el.textContent = count + ' pegawai dipilih';
+    }
+
+    document.querySelectorAll('.pegawai-checkbox').forEach(function(cb) {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
+    // Select / Deselect All
+    const selectAllBtn = document.getElementById('select-all-all');
+    const deselectAllBtn = document.getElementById('deselect-all-all');
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            document.querySelectorAll('.pegawai-checkbox').forEach(function(c) { c.checked = true; });
+            document.querySelectorAll('.select-all-ruangan').forEach(function(c) { c.checked = true; });
+            updateSelectedCount();
+        });
+    }
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            document.querySelectorAll('.pegawai-checkbox').forEach(function(c) { c.checked = false; });
+            document.querySelectorAll('.select-all-ruangan').forEach(function(c) { c.checked = false; });
+            updateSelectedCount();
+        });
+    }
+
+    // === FILTER PEGAWAI ===
+    const filterInput = document.getElementById('filter-pegawai');
+    if (filterInput) {
+        filterInput.addEventListener('input', function() {
+            const keyword = this.value.toLowerCase().trim();
+            document.querySelectorAll('.pegawai-item').forEach(function(item) {
+                const nama = item.querySelector('.pegawai-checkbox').dataset.nama;
+                item.style.display = nama.includes(keyword) ? '' : 'none';
+            });
+            document.querySelectorAll('.ruangan-group').forEach(function(group) {
+                const visible = group.querySelectorAll('.pegawai-item[style*="display: none"]').length;
+                const total = group.querySelectorAll('.pegawai-item').length;
+                if (keyword !== '' && visible === total) {
+                    group.style.display = 'none';
+                } else {
+                    group.style.display = '';
+                }
+            });
+        });
+    }
+
+    // Init selected count on load
+    updateSelectedCount();
 });
 </script>
 @endpush

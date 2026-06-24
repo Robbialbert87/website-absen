@@ -64,19 +64,24 @@ class AbsensiReportController extends Controller
             return collect();
         }
 
-        $pegawais = Pegawai::with('ruangan')
-            ->where('status_aktif', 1)
+        // Preload pivot pegawai IDs per kegiatan
+        $kegiatanPegawaiIds = [];
+        foreach ($kegiatans as $k) {
+            if ($k->tipe === 'kegiatan') {
+                $kegiatanPegawaiIds[$k->id] = $k->pegawais()->pluck('pegawai_id')->toArray();
+            }
+        }
+
+        $allPegawaiIds = Pegawai::where('status_aktif', 1)
             ->when($ruanganId, fn($q) => $q->where('ruangan_id', $ruanganId))
-            ->orderBy('ruangan_id')
-            ->orderBy('nama')
-            ->get();
+            ->pluck('id');
 
         $absensis = AbsensiKegiatan::whereIn('kegiatan_id', $kegiatans->pluck('id'))
-            ->whereIn('pegawai_id', $pegawais->pluck('id'))
+            ->whereIn('pegawai_id', $allPegawaiIds)
             ->get()
             ->groupBy('kegiatan_id');
 
-        $jadwals = JadwalPegawai::whereIn('pegawai_id', $pegawais->pluck('id'))
+        $jadwals = JadwalPegawai::whereIn('pegawai_id', $allPegawaiIds)
             ->whereIn('tanggal_masuk', $kegiatans->pluck('tanggal_kegiatan'))
             ->get()
             ->groupBy('pegawai_id');
@@ -84,6 +89,27 @@ class AbsensiReportController extends Controller
         $result = collect();
 
         foreach ($kegiatans as $kegiatan) {
+            // Determine which pegawai IDs to include
+            if ($kegiatan->tipe === 'apel') {
+                $filteredPegawaiIds = $allPegawaiIds;
+            } else {
+                $filteredPegawaiIds = collect($kegiatanPegawaiIds[$kegiatan->id] ?? []);
+            }
+
+            if ($filteredPegawaiIds->isEmpty()) {
+                $result->push((object) [
+                    'kegiatan' => $kegiatan,
+                    'ruanganData' => collect(),
+                ]);
+                continue;
+            }
+
+            $pegawais = Pegawai::with('ruangan')
+                ->whereIn('id', $filteredPegawaiIds)
+                ->orderBy('ruangan_id')
+                ->orderBy('nama')
+                ->get();
+
             $kegiatanAbsensis = $absensis->get($kegiatan->id, collect());
 
             $pegawaiByRuangan = $pegawais->groupBy('ruangan_id');

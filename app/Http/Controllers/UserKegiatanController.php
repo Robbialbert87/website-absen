@@ -13,15 +13,34 @@ class UserKegiatanController extends Controller
 {
     public function index()
     {
-        $kegiatans = Kegiatan::where('status', 'aktif')->latest()->get();
+        $pegawai_id = Auth::user()->pegawai_id;
+
+        $kegiatans = Kegiatan::where('status', 'aktif')
+            ->where(function ($q) use ($pegawai_id) {
+                $q->where('tipe', 'apel');
+                if ($pegawai_id) {
+                    $q->orWhereHas('pegawais', fn($q2) => $q2->where('pegawai_id', $pegawai_id));
+                }
+            })
+            ->latest()
+            ->get();
+
         return view('user_kegiatan.index', compact('kegiatans'));
     }
 
     public function absenForm($id)
     {
         $kegiatan = Kegiatan::findOrFail($id);
-        
+
         $pegawai_id = Auth::user()->pegawai_id;
+
+        if ($kegiatan->tipe === 'kegiatan' && $pegawai_id) {
+            $terdaftar = $kegiatan->pegawais()->where('pegawai_id', $pegawai_id)->exists();
+            if (!$terdaftar) {
+                abort(403, 'Anda tidak terdaftar sebagai peserta kegiatan ini.');
+            }
+        }
+
         $sudahAbsen = AbsensiKegiatan::where('kegiatan_id', $kegiatan->id)
             ->where('pegawai_id', $pegawai_id)
             ->first();

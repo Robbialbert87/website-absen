@@ -20,12 +20,18 @@ class Kegiatan extends Model
         'longitude',
         'radius_meter',
         'status',
+        'tipe',
         'created_by',
     ];
 
     public function absensiKegiatan()
     {
         return $this->hasMany(AbsensiKegiatan::class);
+    }
+
+    public function pegawais()
+    {
+        return $this->belongsToMany(Pegawai::class, 'kegiatan_pegawai');
     }
 
     public function createdBy()

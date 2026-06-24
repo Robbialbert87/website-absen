@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Kegiatan;
+use App\Models\Pegawai;
+use App\Models\Ruangan;
 
 class KegiatanController extends Controller
 {
@@ -16,7 +18,8 @@ class KegiatanController extends Controller
 
     public function create()
     {
-        return view('kegiatan.create');
+        $ruangans = Ruangan::with('pegawai')->orderBy('nama_ruangan')->get();
+        return view('kegiatan.create', compact('ruangans'));
     }
 
     public function store(\Illuminate\Http\Request $request)
@@ -30,12 +33,19 @@ class KegiatanController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius_meter' => 'required|integer',
+            'tipe' => 'required|in:apel,kegiatan',
+            'pegawai_ids' => 'required_if:tipe,kegiatan|array',
+            'pegawai_ids.*' => 'exists:pegawai,id',
         ]);
 
         $validated['created_by'] = \Illuminate\Support\Facades\Auth::id();
         $validated['status'] = 'aktif';
 
-        Kegiatan::create($validated);
+        $kegiatan = Kegiatan::create($validated);
+
+        if ($request->tipe === 'kegiatan') {
+            $kegiatan->pegawais()->sync($request->pegawai_ids);
+        }
 
         return redirect()->route('kegiatan.index')->with('success', 'Kegiatan berhasil ditambahkan.');
     }
@@ -48,7 +58,9 @@ class KegiatanController extends Controller
 
     public function edit(Kegiatan $kegiatan)
     {
-        return view('kegiatan.edit', compact('kegiatan'));
+        $ruangans = Ruangan::with('pegawai')->orderBy('nama_ruangan')->get();
+        $selectedPegawaiIds = $kegiatan->pegawais->pluck('id')->toArray();
+        return view('kegiatan.edit', compact('kegiatan', 'ruangans', 'selectedPegawaiIds'));
     }
 
     public function update(\Illuminate\Http\Request $request, Kegiatan $kegiatan)
@@ -63,9 +75,18 @@ class KegiatanController extends Controller
             'longitude' => 'required|numeric',
             'radius_meter' => 'required|integer',
             'status' => 'required|in:aktif,selesai',
+            'tipe' => 'required|in:apel,kegiatan',
+            'pegawai_ids' => 'required_if:tipe,kegiatan|array',
+            'pegawai_ids.*' => 'exists:pegawai,id',
         ]);
 
         $kegiatan->update($validated);
+
+        if ($request->tipe === 'kegiatan') {
+            $kegiatan->pegawais()->sync($request->pegawai_ids);
+        } else {
+            $kegiatan->pegawais()->sync([]);
+        }
 
         return redirect()->route('kegiatan.index')->with('success', 'Kegiatan berhasil diupdate.');
     }
