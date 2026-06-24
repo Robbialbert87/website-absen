@@ -22,7 +22,7 @@
     @forelse ($data as $group)
         <table>
             <tr class="kegiatan-header">
-                <td colspan="4">
+                <td colspan="5">
                     {{ $group->kegiatan->nama_kegiatan }} —
                     {{ \Carbon\Carbon::parse($group->kegiatan->tanggal_kegiatan)->translatedFormat('d M Y') }}
                     ({{ $group->kegiatan->jam_mulai }} - {{ $group->kegiatan->jam_selesai }})
@@ -31,20 +31,22 @@
             </tr>
             @foreach ($group->ruanganData as $ruang)
                 <tr class="ruangan-header">
-                    <td colspan="4">{{ $ruang->ruangan->nama_ruangan ?? 'Tanpa Ruangan' }}
+                    <td colspan="5">{{ $ruang->ruangan->nama_ruangan ?? 'Tanpa Ruangan' }}
                         — H:{{ $ruang->hadir }} T:{{ $ruang->terlambat }} X:{{ $ruang->tidak_hadir }}
                     </td>
                 </tr>
                 <tr>
-                    <th style="width: 20%;">NIP</th>
-                    <th style="width: 30%;">Nama Pegawai</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 35%;">Waktu Absen</th>
+                    <th style="width: 15%;">NIP</th>
+                    <th style="width: 25%;">Nama Pegawai</th>
+                    <th style="width: 10%;">Jam Masuk</th>
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 38%;">Waktu Absen</th>
                 </tr>
                 @foreach ($ruang->pegawais as $p)
                     <tr>
                         <td>{{ $p->nip }}</td>
                         <td>{{ $p->nama }}</td>
+                        <td>{{ $p->jam_masuk ?? '-' }}</td>
                         <td>
                             @if ($p->status === 'hadir') Hadir
                             @elseif ($p->status === 'terlambat') Terlambat

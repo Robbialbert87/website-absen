@@ -6,6 +6,7 @@ use App\Models\Kegiatan;
 use App\Models\Pegawai;
 use App\Models\Ruangan;
 use App\Models\AbsensiKegiatan;
+use App\Models\JadwalPegawai;
 use App\Exports\AbsensiExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -75,6 +76,11 @@ class AbsensiReportController extends Controller
             ->get()
             ->groupBy('kegiatan_id');
 
+        $jadwals = JadwalPegawai::whereIn('pegawai_id', $pegawais->pluck('id'))
+            ->whereIn('tanggal_masuk', $kegiatans->pluck('tanggal_kegiatan'))
+            ->get()
+            ->groupBy('pegawai_id');
+
         $result = collect();
 
         foreach ($kegiatans as $kegiatan) {
@@ -87,14 +93,16 @@ class AbsensiReportController extends Controller
             foreach ($pegawaiByRuangan as $ruangId => $pegawaiList) {
                 $ruangan = $pegawaiList->first()->ruangan;
 
-                $pegawaiData = $pegawaiList->map(function ($pegawai) use ($kegiatanAbsensis) {
+                $pegawaiData = $pegawaiList->map(function ($pegawai) use ($kegiatanAbsensis, $jadwals, $kegiatan) {
                     $absen = $kegiatanAbsensis->firstWhere('pegawai_id', $pegawai->id);
+                    $jadwal = $jadwals->get($pegawai->id)?->firstWhere('tanggal_masuk', $kegiatan->tanggal_kegiatan);
 
                     return (object) [
                         'nip' => $pegawai->nip,
                         'nama' => $pegawai->nama,
                         'status' => $absen ? $absen->status : 'tidak_hadir',
                         'waktu_absen' => $absen ? $absen->waktu_absen : null,
+                        'jam_masuk' => $jadwal ? $jadwal->jam_masuk : null,
                         'foto' => $absen ? $absen->foto : null,
                     ];
                 });

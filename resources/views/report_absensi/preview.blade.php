@@ -32,6 +32,7 @@
                                 <tr>
                                     <th class="ps-3">NIP</th>
                                     <th>Nama Pegawai</th>
+                                    <th>Jam Masuk</th>
                                     <th>Status</th>
                                     <th class="pe-3">Waktu Absen</th>
                                 </tr>
@@ -41,6 +42,13 @@
                                     <tr>
                                         <td class="ps-3"><code>{{ $p->nip }}</code></td>
                                         <td>{{ $p->nama }}</td>
+                                        <td>
+                                            @if ($p->jam_masuk)
+                                                {{ $p->jam_masuk }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             @if ($p->status === 'hadir')
                                                 <span class="badge bg-success rounded-pill">Hadir</span>
@@ -60,7 +68,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-3 text-muted">Tidak ada pegawai.</td>
+                                        <td colspan="5" class="text-center py-3 text-muted">Tidak ada pegawai.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
