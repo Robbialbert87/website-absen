@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Absensi Kegiatan</title>
+    <title>Report Kegiatan</title>
     <style>
         body { font-family: sans-serif; font-size: 11px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-    <h2 class="text-center">Laporan Absensi Kegiatan</h2>
+    <h2 class="text-center">Laporan Kegiatan</h2>
     <p class="text-center">Periode: {{ request('bulan', date('m')) }}/{{ request('tahun', date('Y')) }}</p>
 
     @forelse ($data as $group)

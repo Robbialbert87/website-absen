@@ -6,7 +6,7 @@
             <div class="col-12">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Absensi Kegiatan</h2>
+                        <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Report Kegiatan</h2>
                         <p class="text-muted mb-0">Laporan absensi kegiatan per lokasi dan ruangan.</p>
                     </div>
                 </div>

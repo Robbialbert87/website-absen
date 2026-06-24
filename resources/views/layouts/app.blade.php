@@ -326,7 +326,7 @@
                 </a>
                 <a href="{{ route('report.absensi.index') }}"
                     class="sidebar-link {{ request()->routeIs('report.absensi.*') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-check"></i> Absensi Kegiatan
+                    <i class="fas fa-clipboard-check"></i> Report Kegiatan
                 </a>
                 <a href="{{ route('cuti.index') }}"
                     class="sidebar-link {{ request()->routeIs('cuti.*') ? 'active' : '' }}">
