@@ -90,10 +90,6 @@ class UserKegiatanController extends Controller
         }
 
         $status = 'hadir';
-        $now = now()->format('H:i:s');
-        if ($now > $kegiatan->jam_mulai) {
-            $status = 'terlambat';
-        }
 
         // Validate base64 image format and type
         $image_parts = explode(";base64,", $request->foto);
