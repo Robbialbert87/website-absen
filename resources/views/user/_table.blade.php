@@ -1,7 +1,6 @@
 <x-data-table>
     <x-slot name="head">
         <x-sort-icon field="name" label="Nama User" />
-        <x-sort-icon field="email" label="Email" />
         <th>Pegawai Terhubung</th>
         <th>Role</th>
         <th class="text-end px-4">Aksi</th>
@@ -11,7 +10,6 @@
         @forelse($users as $user)
         <tr>
             <td class="px-4"><strong>{{ $user->name }}</strong></td>
-            <td>{{ $user->email }}</td>
             <td>
                 @if($user->pegawai)
                     <span class="fw-bold text-dark">{{ $user->pegawai->nama }}</span><br>
@@ -40,7 +38,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="5" class="text-center py-4 text-muted">Data user tidak ditemukan.</td>
+            <td colspan="4" class="text-center py-4 text-muted">Data user tidak ditemukan.</td>
         </tr>
         @endforelse
     </x-slot>

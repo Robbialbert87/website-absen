@@ -19,7 +19,6 @@
             <tr>
                 <th>No</th>
                 <th>Nama User</th>
-                <th>Email</th>
                 <th>Pegawai Terhubung</th>
                 <th>Role</th>
             </tr>
@@ -29,7 +28,6 @@
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $u->name }}</td>
-                <td>{{ $u->email }}</td>
                 <td>{{ $u->pegawai->nama ?? 'Belum Terhubung' }} ({{ $u->pegawai->nip ?? '-' }})</td>
                 <td>{{ $u->roles->pluck('name')->implode(', ') }}</td>
             </tr>

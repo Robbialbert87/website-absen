@@ -13,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\Filterable;
 
-#[Fillable(['name', 'email', 'username', 'nip', 'password', 'pegawai_id', 'ruangan_id', 'password_changed_at'])]
+#[Fillable(['name', 'username', 'nip', 'password', 'pegawai_id', 'ruangan_id', 'password_changed_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -58,7 +58,6 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

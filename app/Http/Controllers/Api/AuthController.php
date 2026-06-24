@@ -49,7 +49,6 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'nip' => $user->nip,
                 'name' => $user->name,
-                'email' => $user->email,
                 'roles' => $user->getRoleNames(),
             ],
         ]);
@@ -75,7 +74,6 @@ class AuthController extends Controller
             'id' => $user->id,
             'nip' => $user->nip,
             'name' => $user->name,
-            'email' => $user->email,
             'roles' => $user->getRoleNames(),
         ]);
     }

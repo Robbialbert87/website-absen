@@ -20,7 +20,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string'],
+            'nip' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -30,28 +30,27 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $ip = $this->ip();
-        $email = $this->email;
+        $nip = $this->nip;
 
-        $success = Auth::attempt(['email' => $email, 'password' => $this->password], $this->boolean('remember'))
-                || Auth::attempt(['username' => $email, 'password' => $this->password], $this->boolean('remember'))
-                || Auth::attempt(['nip' => $email, 'password' => $this->password], $this->boolean('remember'));
+        $success = Auth::attempt(['nip' => $nip, 'password' => $this->password], $this->boolean('remember'))
+                || Auth::attempt(['username' => $nip, 'password' => $this->password], $this->boolean('remember'));
 
         if ($success) {
             RateLimiter::clear($this->throttleKey());
-            Log::channel('login')->info('Login email berhasil', [
-                'email' => $email,
+            Log::channel('login')->info('Login NIP berhasil', [
+                'nip' => $nip,
                 'ip' => $ip,
                 'user_id' => Auth::id(),
             ]);
         } else {
             RateLimiter::hit($this->throttleKey());
-            Log::channel('login')->warning('Login email gagal', [
-                'email' => $email,
+            Log::channel('login')->warning('Login NIP gagal', [
+                'nip' => $nip,
                 'ip' => $ip,
             ]);
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'nip' => trans('auth.failed'),
             ]);
         }
     }
@@ -64,8 +63,8 @@ class LoginRequest extends FormRequest
 
         event(new Lockout($this));
 
-        Log::channel('login')->warning('Login email terkunci (rate limit)', [
-            'email' => $this->email,
+        Log::channel('login')->warning('Login NIP terkunci (rate limit)', [
+            'nip' => $this->nip,
             'ip' => $this->ip(),
             'seconds' => RateLimiter::availableIn($this->throttleKey()),
         ]);
@@ -73,7 +72,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'nip' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -82,6 +81,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate($this->string('email').'|'.$this->ip());
+        return Str::transliterate($this->string('nip').'|'.$this->ip());
     }
 }

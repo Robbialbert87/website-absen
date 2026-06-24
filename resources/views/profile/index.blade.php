@@ -26,11 +26,6 @@
                     <hr class="my-4" style="border-style: dashed;">
 
                     <div class="mb-3">
-                        <label class="text-muted small text-uppercase fw-bold mb-1">Email</label>
-                        <p class="mb-0 fw-medium">{{ $user->email ?? '-' }}</p>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="text-muted small text-uppercase fw-bold mb-1">Username</label>
                         <p class="mb-0 fw-medium">{{ $user->username ?? '-' }}</p>
                     </div>

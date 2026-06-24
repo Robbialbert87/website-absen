@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         $admin = \App\Models\User::create([
             'name' => 'Administrator',
-            'email' => 'admin@admin.com',
+            'username' => 'admin',
             'password' => \Illuminate\Support\Facades\Hash::make('admin'),
             'password_changed_at' => now(),
         ]);

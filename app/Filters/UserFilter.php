@@ -7,8 +7,7 @@ class UserFilter extends QueryFilter
     public function search($value)
     {
         return $this->builder->where(function ($query) use ($value) {
-            $query->where('name', 'like', "%{$value}%")
-                  ->orWhere('email', 'like', "%{$value}%");
+            $query->where('name', 'like', "%{$value}%");
         });
     }
 
@@ -28,7 +27,7 @@ class UserFilter extends QueryFilter
 
     protected function isSortable($column)
     {
-        $sortableColumns = ['name', 'email', 'created_at'];
+        $sortableColumns = ['name', 'created_at'];
         return in_array($column, $sortableColumns);
     }
 }

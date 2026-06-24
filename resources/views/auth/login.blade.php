@@ -191,35 +191,7 @@
                         <button type="submit" class="btn btn-primary">Masuk</button>
                     </form>
                 </div>
-
-                {{-- <div class="tab-pane fade" id="email" role="tabpanel">
-                    <form action="{{ route('login') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email / NIP</label>
-                            <input type="text" name="email" class="form-control @error('email') is-invalid @enderror" id="email" value="{{ old('email') }}" placeholder="nama@email.com atau NIP">
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="email_password" class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="email_password">
-                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="form-check">
-                                <input type="checkbox" name="remember" class="form-check-input" id="remember_email">
-                                <label class="form-check-label" for="remember_email" style="font-size: 0.85rem; color: var(--text-2);">Ingat saya</label>
-                            </div>
-                            <a href="{{ route('password.request') }}" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600;">Lupa password?</a>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Masuk</button>
-                    </form>
-                </div> --}}
             </div>
-
-            {{-- <div class="footer-text">
-                Belum punya akun? <a href="{{ route('register') }}">Daftar</a>
-            </div> --}}
         </div>
     </div>
 

@@ -14,7 +14,7 @@
             exportPdf="{{ route('user.index', array_merge(request()->query(), ['export' => 'pdf'])) }}">
             <div class="col-md-4">
                 <input type="text" name="search" class="form-control form-control-sm"
-                    placeholder="Cari Nama User, Email..." value="{{ request('search') }}">
+                    placeholder="Cari Nama User..." value="{{ request('search') }}">
             </div>
             <div class="col-md-4">
                 <select name="role" class="form-select form-select-sm">
