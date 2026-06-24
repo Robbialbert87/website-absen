@@ -32,7 +32,8 @@
                                 <tr>
                                     <th class="ps-3">NIP</th>
                                     <th>Nama Pegawai</th>
-                                    <th>Jam Masuk</th>
+                                    <th>Jam Kerja Hari Ini</th>
+                                    <th>Jam Kegiatan</th>
                                     <th>Status</th>
                                     <th class="pe-3">Waktu Absen</th>
                                 </tr>
@@ -48,6 +49,9 @@
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            {{ $group->kegiatan->jam_mulai }} - {{ $group->kegiatan->jam_selesai }}
                                         </td>
                                         <td>
                                             @if ($p->status === 'hadir')
@@ -68,7 +72,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-3 text-muted">Tidak ada pegawai.</td>
+                                        <td colspan="6" class="text-center py-3 text-muted">Tidak ada pegawai.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
