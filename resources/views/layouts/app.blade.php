@@ -476,6 +476,14 @@
             sidebar.classList.remove('active');
         }
     });
+
+    // Scroll sidebar ke link aktif setelah halaman dimuat
+    (function() {
+        const activeLink = sidebar.querySelector('.sidebar-link.active');
+        if (activeLink) {
+            activeLink.scrollIntoView({ block: 'center' });
+        }
+    })();
 </script>
     @stack('scripts')
 </body>
