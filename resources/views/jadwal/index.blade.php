@@ -82,10 +82,7 @@
                             style="font-size: 0.75rem;" title="Export Excel">
                             <i class="fas fa-file-excel"></i>
                         </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 btn-reset-room"
-                            style="font-size: 0.75rem;" title="Reset Jadwal">
-                            <i class="fas fa-undo"></i>
-                        </button>
+
                         @if (auth()->user()->isAdmin() || auth()->user()->hasRole('super-admin'))
                             <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 btn-auto-fill-room"
                                 style="font-size: 0.75rem;" title="Auto Input 6 Hari">
