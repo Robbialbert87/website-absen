@@ -26,28 +26,30 @@
             </td>
             <td>{{ $r->keterangan }}</td>
             <td class="text-end px-4">
-                <button type="button" class="btn btn-sm btn-outline-info btn-show-pegawai" 
-                        data-id="{{ $r->id }}" 
-                        data-name="{{ $r->nama_ruangan }}"
-                        title="Lihat Pegawai">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-success btn-add-pegawai" 
-                        data-id="{{ $r->id }}" 
-                        data-name="{{ $r->nama_ruangan }}"
-                        title="Tambah Pegawai">
-                    <i class="fas fa-user-plus"></i>
-                </button>
-                <a href="{{ route('ruangan.edit', $r->id) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <form action="{{ route('ruangan.destroy', $r->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus ruangan ini?')">
-                        <i class="fas fa-trash"></i>
+                <div class="d-flex gap-1 flex-nowrap justify-content-end action-btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-info btn-show-pegawai" 
+                            data-id="{{ $r->id }}" 
+                            data-name="{{ $r->nama_ruangan }}"
+                            title="Lihat Pegawai">
+                        <i class="fas fa-eye"></i>
                     </button>
-                </form>
+                    <button type="button" class="btn btn-sm btn-outline-success btn-add-pegawai" 
+                            data-id="{{ $r->id }}" 
+                            data-name="{{ $r->nama_ruangan }}"
+                            title="Tambah Pegawai">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href='{{ route('ruangan.edit', $r->id) }}'" title="Edit Ruangan">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form action="{{ route('ruangan.destroy', $r->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus ruangan ini?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
             </td>
         </tr>
         @empty

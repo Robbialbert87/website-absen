@@ -42,16 +42,18 @@
                 <span class="ms-1 small text-muted">{{ $s->warna }}</span>
             </td>
             <td class="text-end px-4">
-                <a href="{{ route('shift.edit', $s->id) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <form action="{{ route('shift.destroy', $s->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus jadwal ini?')">
-                        <i class="fas fa-trash"></i>
+                <div class="d-flex gap-1 flex-nowrap justify-content-end action-btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href='{{ route('shift.edit', $s->id) }}'" title="Edit">
+                        <i class="fas fa-edit"></i>
                     </button>
-                </form>
+                    <form action="{{ route('shift.destroy', $s->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus jadwal ini?')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
             </td>
         </tr>
         @empty

@@ -90,7 +90,7 @@ class AbsensiReportController extends Controller
 
         foreach ($kegiatans as $kegiatan) {
             // Determine which pegawai IDs to include
-            if ($kegiatan->tipe === 'apel') {
+            if (in_array($kegiatan->tipe, ['apel', 'kegiatan_langsung'])) {
                 $filteredPegawaiIds = $allPegawaiIds;
             } else {
                 $filteredPegawaiIds = collect($kegiatanPegawaiIds[$kegiatan->id] ?? []);

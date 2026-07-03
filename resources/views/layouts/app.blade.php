@@ -255,6 +255,18 @@
                 font-size: 0.8rem;
             }
         }
+
+        .action-btn-group .btn {
+            padding: 0.2rem 0.35rem;
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+        @media (min-width: 768px) {
+            .action-btn-group .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 

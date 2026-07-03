@@ -13,7 +13,16 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold" style="color: #1A7A6E;">{{ $kegiatan->nama_kegiatan }}</h5>
+                        <div class="d-flex align-items-start gap-2 mb-1">
+                            <h5 class="card-title fw-bold mb-0" style="color: #1A7A6E;">{{ $kegiatan->nama_kegiatan }}</h5>
+                            <span class="badge bg-info text-white mt-1" style="font-size: 0.65rem;">
+                                @switch($kegiatan->tipe)
+                                    @case('apel') Apel @break
+                                    @case('kegiatan_langsung') Langsung @break
+                                    @default Biasa
+                                @endswitch
+                            </span>
+                        </div>
                         <p class="card-text mb-1"><i class="fas fa-calendar-alt text-muted"></i> {{ \Carbon\Carbon::parse($kegiatan->tanggal_kegiatan)->format('d M Y') }}</p>
                         <p class="card-text mb-1"><i class="fas fa-clock text-muted"></i> {{ $kegiatan->jam_mulai }} - {{ $kegiatan->jam_selesai }}</p>
                         <p class="card-text mb-3"><i class="fas fa-map-marker-alt text-muted"></i> {{ $kegiatan->lokasi }}</p>

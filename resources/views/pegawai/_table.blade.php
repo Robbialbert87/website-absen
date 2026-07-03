@@ -36,16 +36,18 @@
             </td>
             @hasanyrole('super_admin|admin')
             <td class="text-end px-4">
-                <a href="{{ route('pegawai.edit', $p->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <form action="{{ route('pegawai.destroy', $p->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus pegawai ini?')" title="Hapus">
-                        <i class="fas fa-trash"></i>
+                <div class="d-flex gap-1 flex-nowrap justify-content-end action-btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href='{{ route('pegawai.edit', $p->id) }}'" title="Edit">
+                        <i class="fas fa-edit"></i>
                     </button>
-                </form>
+                    <form action="{{ route('pegawai.destroy', $p->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus pegawai ini?')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
             </td>
             @endhasanyrole
         </tr>

@@ -17,7 +17,7 @@ class UserKegiatanController extends Controller
 
         $kegiatans = Kegiatan::where('status', 'aktif')
             ->where(function ($q) use ($pegawai_id) {
-                $q->where('tipe', 'apel');
+                $q->whereIn('tipe', ['apel', 'kegiatan_langsung']);
                 if ($pegawai_id) {
                     $q->orWhereHas('pegawais', fn($q2) => $q2->where('pegawai_id', $pegawai_id));
                 }

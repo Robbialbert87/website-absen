@@ -30,18 +30,20 @@
                                 @endforeach
                             </td>
                             <td class="text-end px-4">
-                                <a href="{{ route('role.edit', $role->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                @if($role->name !== 'admin')
-                                <form action="{{ route('role.destroy', $role->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus role ini?')">
-                                        <i class="fas fa-trash"></i>
+                                <div class="d-flex gap-1 flex-nowrap justify-content-end action-btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href='{{ route('role.edit', $role->id) }}'" title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </button>
-                                </form>
-                                @endif
+                                    @if($role->name !== 'admin')
+                                    <form action="{{ route('role.destroy', $role->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus role ini?')" title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach

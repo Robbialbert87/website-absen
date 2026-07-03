@@ -33,7 +33,7 @@ class KegiatanController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius_meter' => 'required|integer',
-            'tipe' => 'required|in:apel,kegiatan',
+            'tipe' => 'required|in:apel,kegiatan,kegiatan_langsung',
             'pegawai_ids' => 'required_if:tipe,kegiatan|array',
             'pegawai_ids.*' => 'exists:pegawai,id',
         ]);
@@ -75,7 +75,7 @@ class KegiatanController extends Controller
             'longitude' => 'required|numeric',
             'radius_meter' => 'required|integer',
             'status' => 'required|in:aktif,selesai',
-            'tipe' => 'required|in:apel,kegiatan',
+            'tipe' => 'required|in:apel,kegiatan,kegiatan_langsung',
             'pegawai_ids' => 'required_if:tipe,kegiatan|array',
             'pegawai_ids.*' => 'exists:pegawai,id',
         ]);

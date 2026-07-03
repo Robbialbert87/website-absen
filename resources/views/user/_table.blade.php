@@ -24,16 +24,18 @@
                 @endforeach
             </td>
             <td class="text-end px-4">
-                <a href="{{ route('user.edit', $user->id) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <form action="{{ route('user.destroy', $user->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus user ini?')">
-                        <i class="fas fa-trash"></i>
+                <div class="d-flex gap-1 flex-nowrap justify-content-end action-btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href='{{ route('user.edit', $user->id) }}'" title="Edit">
+                        <i class="fas fa-edit"></i>
                     </button>
-                </form>
+                    <form action="{{ route('user.destroy', $user->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus user ini?')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
             </td>
         </tr>
         @empty

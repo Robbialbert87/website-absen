@@ -23,6 +23,10 @@
         display: none;
     }
     .map-tip.visible { display: block; }
+
+    @media (max-width: 576px) {
+        #map-picker { height: 260px; }
+    }
 </style>
 @endpush
 
@@ -33,11 +37,11 @@
     </div>
 
     <div class="card shadow-sm border-0" style="border-radius: 15px;">
-        <div class="card-body">
+        <div class="card-body p-3 p-md-4">
             <form action="{{ route('kegiatan.store') }}" method="POST">
                 @csrf
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label class="form-label">Nama Kegiatan</label>
                         <input type="text" name="nama_kegiatan" class="form-control" required value="{{ old('nama_kegiatan') }}">
                     </div>
@@ -48,28 +52,26 @@
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-6">
                         <label class="form-label">Jam Mulai</label>
                         <input type="time" name="jam_mulai" class="form-control" required value="{{ old('jam_mulai') }}">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-6">
                         <label class="form-label">Jam Selesai</label>
                         <input type="time" name="jam_selesai" class="form-control" required value="{{ old('jam_selesai') }}">
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label class="form-label">Lokasi (Nama Tempat)</label>
-                        <input type="text" name="lokasi" class="form-control" required value="{{ old('lokasi', 'RSUD H. Abdul Manap Kota Jambi') }}">
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Lokasi (Nama Tempat)</label>
+                    <input type="text" name="lokasi" class="form-control" required value="{{ old('lokasi', 'RSUD H. Abdul Manap Kota Jambi') }}">
                 </div>
 
                 {{-- === BAGIAN PETA & KOORDINAT === --}}
                 <div class="mb-4">
                     <label class="form-label fw-bold">Titik Lokasi Kegiatan</label>
                     <div class="d-flex flex-wrap gap-2 mb-2">
-                        <button type="button" id="btn-open-map" class="btn btn-info text-white btn-sm rounded-pill shadow-sm">
+                        <button type="button" id="btn-open-map" class="btn btn-info text-white btn-sm rounded-pill shadow-sm w-sm-auto w-100">
                             <i class="fas fa-map-marked-alt"></i> Pilih Lokasi di Peta
                         </button>
                         <a href="#" id="btn-view-gmaps" target="_blank" class="btn btn-outline-success btn-sm rounded-pill d-none">
@@ -84,18 +86,18 @@
 
                     <div id="map-picker"></div>
 
-                    <div class="row mt-3">
-                        <div class="col-md-4">
+                    <div class="row mt-3 g-2">
+                        <div class="col-md-4 col-6">
                             <label class="form-label">Latitude</label>
                             <input type="text" id="latitude" name="latitude" class="form-control bg-light" required readonly
                                 value="{{ old('latitude', '-1.6411802') }}">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 col-6">
                             <label class="form-label">Longitude</label>
                             <input type="text" id="longitude" name="longitude" class="form-control bg-light" required readonly
                                 value="{{ old('longitude', '103.5793161') }}">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 col-12 mt-2 mt-md-0">
                             <label class="form-label">Radius (Meter)</label>
                             <input type="number" id="radius_meter" name="radius_meter" class="form-control" required
                                 value="{{ old('radius_meter', 100) }}" min="10" max="5000">
@@ -106,7 +108,7 @@
                 {{-- === TIPE KEGIATAN & PEMILIHAN PEGAWAI === --}}
                 <div class="mb-4">
                     <label class="form-label fw-bold">Tipe Kegiatan</label>
-                    <div class="d-flex gap-4">
+                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-4">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="tipe" id="tipe_kegiatan" value="kegiatan" {{ old('tipe', 'kegiatan') === 'kegiatan' ? 'checked' : '' }}>
                             <label class="form-check-label" for="tipe_kegiatan">Kegiatan Biasa (pilih peserta)</label>
@@ -115,13 +117,17 @@
                             <input class="form-check-input" type="radio" name="tipe" id="tipe_apel" value="apel" {{ old('tipe') === 'apel' ? 'checked' : '' }}>
                             <label class="form-check-label" for="tipe_apel">Apel Pagi (semua pegawai)</label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipe" id="tipe_langsung" value="kegiatan_langsung" {{ old('tipe') === 'kegiatan_langsung' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="tipe_langsung">Kegiatan Langsung (absen langsung di lokasi)</label>
+                        </div>
                     </div>
                 </div>
 
                 <div id="pegawai-selection" class="mb-4">
                     <label class="form-label fw-bold">Pilih Peserta Kegiatan</label>
                     <div class="mb-2">
-                        <input type="text" id="filter-pegawai" class="form-control form-control-sm" style="max-width: 300px;" placeholder="Cari nama pegawai...">
+                        <input type="text" id="filter-pegawai" class="form-control" placeholder="Cari nama pegawai...">
                     </div>
                     <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px;">
                         @foreach ($ruangans as $ruangan)
@@ -131,9 +137,9 @@
                                     <strong class="small">{{ $ruangan->nama_ruangan }}</strong>
                                     <span class="text-muted small">({{ $ruangan->pegawai->count() }} pegawai)</span>
                                 </div>
-                                <div class="ms-3 row g-1" data-ruangan="{{ $ruangan->id }}">
+                                <div class="ms-0 ms-sm-3 row g-1" data-ruangan="{{ $ruangan->id }}">
                                     @forelse ($ruangan->pegawai->where('status_aktif', 1) as $pegawai)
-                                        <div class="col-md-4 col-sm-6 pegawai-item">
+                                        <div class="col-12 col-sm-6 col-md-4 pegawai-item">
                                             <div class="form-check">
                                                 <input class="form-check-input pegawai-checkbox" type="checkbox"
                                                     name="pegawai_ids[]" value="{{ $pegawai->id }}"
@@ -155,14 +161,16 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="mt-2">
-                        <button type="button" id="select-all-all" class="btn btn-outline-primary btn-sm rounded-pill">Pilih Semua</button>
-                        <button type="button" id="deselect-all-all" class="btn btn-outline-secondary btn-sm rounded-pill">Hapus Semua</button>
-                        <span id="selected-count" class="small text-muted ms-2">0 pegawai dipilih</span>
+                    <div class="mt-2 d-flex flex-column flex-sm-row gap-2 align-items-start align-items-sm-center">
+                        <div class="d-flex gap-2 w-100 w-sm-auto">
+                            <button type="button" id="select-all-all" class="btn btn-outline-primary btn-sm rounded-pill flex-fill flex-sm-grow-0">Pilih Semua</button>
+                            <button type="button" id="deselect-all-all" class="btn btn-outline-secondary btn-sm rounded-pill flex-fill flex-sm-grow-0">Hapus Semua</button>
+                        </div>
+                        <span id="selected-count" class="small text-muted">0 pegawai dipilih</span>
                     </div>
                 </div>
 
-                <div class="text-end">
+                <div class="d-flex flex-column-reverse flex-sm-row gap-2 justify-content-end">
                     <a href="{{ route('kegiatan.index') }}" class="btn btn-secondary">Batal</a>
                     <button type="submit" class="btn text-white" style="background-color: #1A7A6E;">Simpan Kegiatan</button>
                 </div>
@@ -289,14 +297,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // === TIPE KEGIATAN TOGGLE ===
     const tipeKegiatan = document.getElementById('tipe_kegiatan');
-    const tipeApel = document.getElementById('tipe_apel');
     const pegawaiSelection = document.getElementById('pegawai-selection');
+    const tipeRadios = document.querySelectorAll('input[name="tipe"]');
 
     function togglePegawaiSelection() {
         pegawaiSelection.style.display = tipeKegiatan.checked ? 'block' : 'none';
     }
-    tipeKegiatan.addEventListener('change', togglePegawaiSelection);
-    tipeApel.addEventListener('change', togglePegawaiSelection);
+    tipeRadios.forEach(r => r.addEventListener('change', togglePegawaiSelection));
     togglePegawaiSelection();
     updateSelectedCount();
 
