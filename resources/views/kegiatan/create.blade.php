@@ -67,21 +67,6 @@
                     <input type="text" name="lokasi" class="form-control" required value="{{ old('lokasi', 'RSUD H. Abdul Manap Kota Jambi') }}">
                 </div>
 
-                {{-- === PILIHAN LOKASI CEPAT (PRESET) === --}}
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Pilih Lokasi Cepat</label>
-                    <select id="preset-location" class="form-select" aria-label="Pilih lokasi preset">
-                        <option value="">-- Pilih lokasi preset --</option>
-                        <option value="rsud" data-lat="-1.6411802" data-lng="103.5793161" data-radius="100" data-nama="RSUD H. Abdul Manap Kota Jambi">
-                            RSUD H. Abdul Manap Kota Jambi
-                        </option>
-                        <option value="kantor_walikota" data-lat="-1.622350" data-lng="103.592600" data-radius="100" data-nama="Kantor Wali Kota Jambi">
-                            Kantor Wali Kota Jambi
-                        </option>
-                    </select>
-                    <div class="form-text">Pilih untuk mengisi otomatis nama lokasi, koordinat, dan radius.</div>
-                </div>
-
                 {{-- === BAGIAN PETA & KOORDINAT === --}}
                 <div class="mb-4">
                     <label class="form-label fw-bold">Titik Lokasi Kegiatan</label>
@@ -309,35 +294,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Init Google Maps link dari nilai default
     updateGmapsLink();
-
-    // === PRESET LOKASI CEPAT ===
-    const presetSelect = document.getElementById('preset-location');
-    const inputLokasi = document.querySelector('input[name="lokasi"]');
-
-    presetSelect.addEventListener('change', function() {
-        const option = this.options[this.selectedIndex];
-        if (!option.value) return;
-
-        const lat = option.dataset.lat;
-        const lng = option.dataset.lng;
-        const radius = option.dataset.radius;
-        const nama = option.dataset.nama;
-
-        // Isi form
-        inputLat.value = lat;
-        inputLon.value = lng;
-        inputRadius.value = radius;
-        inputLokasi.value = nama;
-
-        // Update peta jika sudah dibuka
-        if (mapInitialized && map && marker && circle) {
-            placeMarker(parseFloat(lat), parseFloat(lng));
-        }
-        updateGmapsLink();
-
-        // Reset dropdown
-        this.value = '';
-    });
 
     // === TIPE KEGIATAN TOGGLE ===
     const tipeKegiatan = document.getElementById('tipe_kegiatan');
