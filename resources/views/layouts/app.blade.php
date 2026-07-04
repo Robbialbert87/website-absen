@@ -25,7 +25,7 @@
     @stack('styles')
     <style>
         :root {
-            --sidebar-width: 280px;
+            --sidebar-width: 260px;
         }
 
         body {
@@ -55,7 +55,7 @@
             left: 0;
             background: var(--surface-2);
             border-right: 1px solid var(--border);
-            padding: 30px 20px;
+            padding: 20px 14px;
             z-index: 1001;
             transition: all 0.4s var(--silk);
             box-shadow: var(--shadow-sm);
@@ -63,7 +63,7 @@
         }
 
         .sidebar-brand {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             padding: 0 10px;
             display: flex;
             justify-content: center;
@@ -72,31 +72,27 @@
 
         .sidebar-brand img {
             max-height: auto;
-            width: 150px;
+            width: 130px;
             object-fit: contain;
         }
 
-        .sidebar-brand span {
-            color: var(--accent);
-        }
-
         .sidebar-link {
-            padding: 12px 18px;
+            padding: 8px 14px;
             color: var(--text-2);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 12px;
-            border-radius: 12px;
+            gap: 10px;
+            border-radius: 10px;
             transition: all 0.3s var(--silk);
             font-weight: 500;
-            font-size: 0.95rem;
-            margin-bottom: 4px;
+            font-size: 0.82rem;
+            margin-bottom: 2px;
         }
 
         .sidebar-link i {
-            width: 20px;
-            font-size: 1.1rem;
+            width: 18px;
+            font-size: 0.9rem;
             color: var(--text-3);
             transition: color 0.3s;
         }
@@ -121,12 +117,12 @@
         }
 
         .sidebar-section-title {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.08em;
             color: var(--text-3);
-            margin: 25px 0 10px 18px;
+            margin: 18px 0 6px 14px;
         }
 
         /* Main Layout */
