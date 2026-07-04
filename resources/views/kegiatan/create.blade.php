@@ -33,7 +33,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Tambah Kegiatan Baru</h1>
+        <h1 class="h4 mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Tambah Kegiatan Baru</h1>
     </div>
 
     <div class="card shadow-sm border-0" style="border-radius: 15px;">

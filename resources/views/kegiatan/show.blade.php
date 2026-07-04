@@ -3,7 +3,7 @@
 <div class="container-fluid">
     <div class="mb-4 d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">Detail Kegiatan</h1>
+            <h1 class="h4 mb-0 fw-bold" style="font-family: 'Playfair Display', serif; color: #0D1E1C;">Detail Kegiatan</h1>
             <p class="text-muted">{{ $kegiatan->nama_kegiatan }}</p>
         </div>
         <a href="{{ route('kegiatan.index') }}" class="btn btn-secondary rounded-pill">
