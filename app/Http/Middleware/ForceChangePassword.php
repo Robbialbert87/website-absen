@@ -17,8 +17,8 @@ class ForceChangePassword
     {
         if (\Illuminate\Support\Facades\Auth::check()) {
             $user = \Illuminate\Support\Facades\Auth::user();
-            // If they haven't changed password and it's not the change password route itself
-            if (empty($user->password_changed_at) && !$request->routeIs('password.change') && !$request->routeIs('password.change.update') && !$request->routeIs('logout')) {
+            $nip = $user->nip;
+            if ($nip && \Illuminate\Support\Facades\Hash::check($nip, $user->password) && !$request->routeIs('password.change') && !$request->routeIs('password.change.update') && !$request->routeIs('logout')) {
                 return redirect()->route('password.change')->with('warning', 'Anda diwajibkan untuk mengganti password default Anda demi keamanan.');
             }
         }

@@ -21,7 +21,6 @@ class PasswordController extends Controller
         
         $user->update([
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            'password_changed_at' => now(),
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Password berhasil diubah.');
