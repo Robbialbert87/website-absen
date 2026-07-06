@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware(['auth', 'force_change_password'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Password Change
     Route::get('/password/change', [\App\Http\Controllers\PasswordController::class, 'showChangeForm'])->name('password.change');
     Route::post('/password/change', [\App\Http\Controllers\PasswordController::class, 'update'])->name('password.change.update');
