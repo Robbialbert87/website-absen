@@ -11,11 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['email', 'email_verified_at']);
-        });
+        $driver = Schema::getConnection()->getDriverName();
 
-        Schema::dropIfExists('password_reset_tokens');
+        if ($driver === 'sqlite') {
+            // SQLite: drop unique index first before dropping column
+            Schema::dropIfExists('password_reset_tokens');
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropUnique(['email']);
+                $table->dropColumn(['email', 'email_verified_at']);
+            });
+        } else {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn(['email', 'email_verified_at']);
+            });
+            Schema::dropIfExists('password_reset_tokens');
+        }
     }
 
     public function down(): void

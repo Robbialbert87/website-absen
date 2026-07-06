@@ -12,11 +12,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("UPDATE absensi_kegiatan SET waktu_absen = DATE_ADD(waktu_absen, INTERVAL 7 HOUR)");
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            DB::statement("UPDATE absensi_kegiatan SET waktu_absen = datetime(waktu_absen, '+7 hours')");
+        } else {
+            DB::statement("UPDATE absensi_kegiatan SET waktu_absen = DATE_ADD(waktu_absen, INTERVAL 7 HOUR)");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("UPDATE absensi_kegiatan SET waktu_absen = DATE_SUB(waktu_absen, INTERVAL 7 HOUR)");
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            DB::statement("UPDATE absensi_kegiatan SET waktu_absen = datetime(waktu_absen, '-7 hours')");
+        } else {
+            DB::statement("UPDATE absensi_kegiatan SET waktu_absen = DATE_SUB(waktu_absen, INTERVAL 7 HOUR)");
+        }
     }
 };
