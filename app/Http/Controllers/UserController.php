@@ -48,7 +48,6 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required',
-            'username' => 'nullable|string|unique:users,username',
             'password' => 'required|min:6|confirmed',
             'roles' => 'required|array',
             'pegawai_id' => 'required|exists:pegawai,id|unique:users,pegawai_id',
@@ -57,13 +56,10 @@ class UserController extends Controller
             'pegawai_id.unique' => 'Pegawai ini sudah memiliki akun user.',
         ]);
 
-        // Get pegawai data to access NIP
         $pegawai = Pegawai::find($validated['pegawai_id']);
-        
-        // Check if role includes kepala_ruangan
+
         $isKepalaRuangan = in_array('kepala_ruangan', $validated['roles']);
-        
-        // If kepala_ruangan, use NIP as password
+
         $password = $validated['password'];
         if ($isKepalaRuangan) {
             $password = $pegawai->nip;
@@ -71,7 +67,6 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
-            'username' => $validated['username'] ?? null,
             'nip' => $pegawai->nip,
             'password' => Hash::make($password),
             'pegawai_id' => $validated['pegawai_id'],
@@ -94,22 +89,18 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required',
-            'username' => 'nullable|string|unique:users,username,' . $user->id,
             'password' => 'nullable|min:6|confirmed',
             'roles' => 'required|array',
             'pegawai_id' => 'required|exists:pegawai,id|unique:users,pegawai_id,' . $user->id,
             'reset_password_to_nip' => 'nullable|boolean',
         ]);
 
-        // Get pegawai data to access NIP
         $pegawai = Pegawai::find($validated['pegawai_id']);
-        
-        // Check if role includes kepala_ruangan
+
         $isKepalaRuangan = in_array('kepala_ruangan', $validated['roles']);
 
         $user->update([
             'name' => $validated['name'],
-            'username' => $validated['username'] ?? null,
             'nip' => $pegawai->nip,
             'pegawai_id' => $validated['pegawai_id'],
         ]);

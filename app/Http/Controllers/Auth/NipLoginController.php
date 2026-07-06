@@ -26,23 +26,16 @@ class NipLoginController extends Controller
         $password = $request->password;
         $ip = $request->ip();
 
-        $nipMatch = Auth::attempt(['nip' => $nip, 'password' => $password], $request->boolean('remember'));
-        $usernameMatch = !$nipMatch && Auth::attempt(['username' => $nip, 'password' => $password], $request->boolean('remember'));
-
-        if ($nipMatch || $usernameMatch) {
+        if (Auth::attempt(['nip' => $nip, 'password' => $password], $request->boolean('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
 
             Log::channel('login')->info('Login NIP berhasil', [
                 'nip_input' => $nip,
-                'matched_by' => $nipMatch ? 'nip' : 'username',
+                'matched_by' => 'nip',
                 'ip' => $ip,
                 'user_id' => $user->id,
             ]);
-
-            if (!$user->nip && ctype_digit($user->username)) {
-                $user->forceFill(['nip' => $user->username])->save();
-            }
 
             if ($user->isPegawaiBiasa()) {
                 return redirect()->intended(route('user.kegiatan.index'));

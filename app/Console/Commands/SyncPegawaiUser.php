@@ -22,7 +22,7 @@ class SyncPegawaiUser extends Command
                 ['pegawai_id' => $pegawai->id],
                 [
                     'name' => $pegawai->nama,
-                    'username' => $pegawai->nip,
+                    'nip' => $pegawai->nip,
                     'password' => \Illuminate\Support\Facades\Hash::make($pegawai->nip),
                     'ruangan_id' => $pegawai->ruangan_id,
                 ]
@@ -32,8 +32,8 @@ class SyncPegawaiUser extends Command
                 $user->assignRole('user');
                 $count++;
             } else {
-                if (empty($user->username)) {
-                    $user->update(['username' => $pegawai->nip]);
+                if (empty($user->nip)) {
+                    $user->update(['nip' => $pegawai->nip]);
                     $count++;
                 }
             }

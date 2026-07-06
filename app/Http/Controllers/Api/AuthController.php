@@ -20,9 +20,7 @@ class AuthController extends Controller
         $nip = $request->nip;
         $password = $request->password;
 
-        // Try authenticate via nip first, then fallback to username
-        $success = Auth::attempt(['nip' => $nip, 'password' => $password])
-                || Auth::attempt(['username' => $nip, 'password' => $password]);
+        $success = Auth::attempt(['nip' => $nip, 'password' => $password]);
 
         if (!$success) {
             Log::channel('login')->warning('API login gagal', [
