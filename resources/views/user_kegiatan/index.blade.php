@@ -25,11 +25,29 @@
                         </div>
                         <p class="card-text mb-1"><i class="fas fa-calendar-alt text-muted"></i> {{ \Carbon\Carbon::parse($kegiatan->tanggal_kegiatan)->format('d M Y') }}</p>
                         <p class="card-text mb-1"><i class="fas fa-clock text-muted"></i> {{ $kegiatan->jam_mulai }} - {{ $kegiatan->jam_selesai }}</p>
-                        <p class="card-text mb-3"><i class="fas fa-map-marker-alt text-muted"></i> {{ $kegiatan->lokasi }}</p>
-                        
-                        <a href="{{ route('user.kegiatan.absen-form', $kegiatan->id) }}" class="btn text-white w-100 rounded-pill" style="background-color: #1A7A6E;">
-                            <i class="fas fa-camera"></i> Mulai Absen
-                        </a>
+                        <p class="card-text mb-1"><i class="fas fa-map-marker-alt text-muted"></i> {{ $kegiatan->lokasi }}</p>
+
+                        @php $absen = $absensiUser[$kegiatan->id] ?? null; @endphp
+
+                        @if($absen)
+                            <div class="mt-2 w-100">
+                                <span class="badge d-flex align-items-center justify-content-center gap-2 px-3 py-2 w-100 fs-6 fw-semibold rounded-pill
+                                    @switch($absen->status)
+                                        @case('hadir') bg-success-subtle text-success border border-success @break
+                                        @case('terlambat') bg-warning-subtle text-dark border border-warning @break
+                                        @default bg-danger-subtle text-danger border border-danger @endswitch">
+                                    <i class="fas @switch($absen->status)
+                                        @case('hadir') fa-check-circle @break
+                                        @case('terlambat') fa-clock @break
+                                        @default fa-times-circle @endswitch"></i>
+                                    Anda telah melakukan absensi
+                                </span>
+                            </div>
+                        @else
+                            <a href="{{ route('user.kegiatan.absen-form', $kegiatan->id) }}" class="btn text-white w-100 rounded-pill mt-2" style="background-color: #1A7A6E;">
+                                <i class="fas fa-camera"></i> Mulai Absen
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

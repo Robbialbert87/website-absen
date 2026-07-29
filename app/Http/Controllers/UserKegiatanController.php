@@ -14,6 +14,7 @@ class UserKegiatanController extends Controller
     public function index()
     {
         $pegawai_id = Auth::user()->pegawai_id;
+        $now = now();
 
         $kegiatans = Kegiatan::where('status', 'aktif')
             ->where(function ($q) use ($pegawai_id) {
@@ -22,10 +23,26 @@ class UserKegiatanController extends Controller
                     $q->orWhereHas('pegawais', fn($q2) => $q2->where('pegawai_id', $pegawai_id));
                 }
             })
+            ->where(function ($q) use ($now) {
+                $q->whereDate('tanggal_kegiatan', '>', $now->toDateString())
+                  ->orWhere(function ($q2) use ($now) {
+                      $q2->whereDate('tanggal_kegiatan', '=', $now->toDateString())
+                         ->whereTime('jam_selesai', '>=', $now->toTimeString());
+                  });
+            })
             ->latest()
             ->get();
 
-        return view('user_kegiatan.index', compact('kegiatans'));
+        $kegiatanIds = $kegiatans->pluck('id');
+        $absensiUser = collect();
+        if ($pegawai_id && $kegiatanIds->isNotEmpty()) {
+            $absensiUser = AbsensiKegiatan::where('pegawai_id', $pegawai_id)
+                ->whereIn('kegiatan_id', $kegiatanIds)
+                ->get()
+                ->keyBy('kegiatan_id');
+        }
+
+        return view('user_kegiatan.index', compact('kegiatans', 'absensiUser'));
     }
 
     public function absenForm($id)
