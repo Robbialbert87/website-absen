@@ -86,11 +86,11 @@ class JadwalExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
 
         if ($isCuti || $isLibur) {
             $statusText = $isCuti ? 'Cuti' : 'Libur';
-            $jamMasuk = Carbon::parse($jadwal->tanggal_masuk)->format('Y-n-j') . ' ' . $statusText;
-            $jamPulang = Carbon::parse($jadwal->tanggal_masuk)->format('Y-n-j') . ' ' . $statusText;
+            $jamMasuk = "\t" . Carbon::parse($jadwal->tanggal_masuk)->format('Y-m-d') . ' ' . $statusText;
+            $jamPulang = "\t" . Carbon::parse($jadwal->tanggal_masuk)->format('Y-m-d') . ' ' . $statusText;
         } else {
-            $jamMasuk = Carbon::parse($jadwal->tanggal_masuk . ' ' . $jadwal->jam_masuk)->format('Y-n-j H:i:s');
-            $jamPulang = Carbon::parse($jadwal->tanggal_pulang . ' ' . $jadwal->jam_pulang)->format('Y-n-j H:i:s');
+            $jamMasuk = "\t" . Carbon::parse($jadwal->tanggal_masuk . ' ' . $jadwal->jam_masuk)->format('Y-m-d H:i:s');
+            $jamPulang = "\t" . Carbon::parse($jadwal->tanggal_pulang . ' ' . $jadwal->jam_pulang)->format('Y-m-d H:i:s');
         }
 
         return [

@@ -625,13 +625,25 @@
 
         $(document).ready(function() {
             const modalCalendarEl = document.getElementById('modalCalendar');
-            modalCalendar = new bootstrap.Modal(modalCalendarEl);
+            modalCalendar = new bootstrap.Modal(modalCalendarEl, { keyboard: false });
             modalShiftPicker = new bootstrap.Modal(document.getElementById('modalShiftPicker'));
 
             // Reload page on modal close if changes were made
             modalCalendarEl.addEventListener('hidden.bs.modal', function() {
+                modalShiftPicker.hide();
                 if (hasChanged) {
                     location.reload();
+                }
+            });
+
+            // ESC: tutup popup pilih jadwal duluan, baru kalender
+            document.addEventListener('keydown', function(e) {
+                if (e.key !== 'Escape') return;
+                const pickerOpen = document.getElementById('modalShiftPicker').classList.contains('show');
+                if (pickerOpen) {
+                    modalShiftPicker.hide();
+                } else {
+                    modalCalendar.hide();
                 }
             });
 
@@ -664,10 +676,12 @@
 
             const eventsUrl  = '{{ url('jadwal/events') }}';
             const holidayUrl = '{{ route('api.holidays') }}';
+            const filterInitialDate = '{{ $tahun }}-{{ str_pad((int) $bulan, 2, '0', STR_PAD_LEFT) }}-01';
 
             const isMobile = window.innerWidth < 768;
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                initialDate: filterInitialDate,
                 locale: 'id',
                 headerToolbar: isMobile ? {
                     left:   'title',
