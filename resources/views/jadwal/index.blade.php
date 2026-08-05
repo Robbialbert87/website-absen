@@ -544,10 +544,45 @@
 @endsection
 
 @push('scripts')
-    <!-- FullCalendar 6 -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = url;
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Gagal memuat ' + url));
+                document.body.appendChild(s);
+            });
+        }
+
+        let fullCalendarPromise = null;
+        function ensureFullCalendar() {
+            if (!fullCalendarPromise) {
+                fullCalendarPromise = loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js')
+                    .catch((err) => {
+                        fullCalendarPromise = null;
+                        throw err;
+                    });
+            }
+            return fullCalendarPromise;
+        }
+
+        let swalPromise = null;
+        function ensureSwal() {
+            if (!swalPromise) {
+                swalPromise = loadScript('https://cdn.jsdelivr.net/npm/sweetalert2@11')
+                    .catch((err) => {
+                        swalPromise = null;
+                        throw err;
+                    });
+            }
+            return swalPromise;
+        }
+
+        function confirmPopup(...args) {
+            return ensureSwal().then(() => Swal.fire(...args));
+        }
+
         let currentPegawaiId = null;
         let currentPegawaiKategori = null;
         let currentSelectedDate = null;
@@ -576,10 +611,18 @@
 
             modalCalendar.show();
 
-            // Initialize calendar after modal is shown to ensure correct sizing
-            setTimeout(() => {
-                initCalendar();
-            }, 200);
+            // Lazy-load FullCalendar, lalu inisialisasi setelah modal tampil & script siap
+            ensureFullCalendar().then(() => {
+                setTimeout(() => {
+                    initCalendar();
+                }, 200);
+            }).catch(() => {
+                confirmPopup({
+                    icon: 'error',
+                    title: 'Gagal Memuat Kalender',
+                    text: 'Script kalender gagal dimuat. Periksa koneksi internet Anda.'
+                });
+            });
         }
 
         function filterShifts() {
@@ -813,7 +856,7 @@
                 const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
                 const year = viewDate.getFullYear();
 
-                Swal.fire({
+                confirmPopup({
                     title: 'Auto Input Jadwal?',
                     text: `Jadwal ${label} untuk bulan ${month}/${year} akan diisi otomatis. Jadwal yang sudah ada akan diperbarui.`,
                     icon: 'question',
@@ -835,10 +878,10 @@
                             success: function(response) {
                                 hasChanged = true;
                                 calendar.refetchEvents();
-                                Swal.fire('Berhasil', response.message, 'success');
+                                confirmPopup('Berhasil', response.message, 'success');
                             },
                             error: function(xhr) {
-                                Swal.fire('Gagal', xhr.responseJSON?.message ||
+                                confirmPopup('Gagal', xhr.responseJSON?.message ||
                                     'Terjadi kesalahan', 'error');
                             }
                         });
@@ -862,7 +905,7 @@
                 const isAll = ruangan_id === 'all';
                 const locationText = isAll ? 'SELURUH ruangan' : 'ruangan ini';
 
-                Swal.fire({
+                confirmPopup({
                     title: 'Auto Input ' + (isAll ? 'Seluruh Ruangan?' : 'Ruangan?'),
                     text: `Semua pegawai ${label} di ${locationText} akan diisi jadwalnya secara otomatis untuk bulan ${month}/${year}.`,
                     icon: 'warning',
@@ -883,10 +926,10 @@
                             },
                             success: function(response) {
                                 location.reload();
-                                Swal.fire('Berhasil', response.message, 'success');
+                                confirmPopup('Berhasil', response.message, 'success');
                             },
                             error: function(xhr) {
-                                Swal.fire('Gagal', xhr.responseJSON?.message ||
+                                confirmPopup('Gagal', xhr.responseJSON?.message ||
                                     'Terjadi kesalahan', 'error');
                             }
                         });
@@ -910,7 +953,7 @@
                 const isAll = ruangan_id === 'all';
                 const locationText = isAll ? 'SELURUH ruangan' : 'ruangan ini';
 
-                Swal.fire({
+                confirmPopup({
                     title: 'Reset Jadwal ' + (isAll ? 'Seluruh Ruangan?' : 'Ruangan?'),
                     text: `Seluruh jadwal kerja untuk SEMUA pegawai di ${locationText} pada bulan ${month}/${year} akan dihapus permanen!`,
                     icon: 'warning',
@@ -931,10 +974,10 @@
                             },
                             success: function(response) {
                                 location.reload();
-                                Swal.fire('Berhasil', response.message, 'success');
+                                confirmPopup('Berhasil', response.message, 'success');
                             },
                             error: function(xhr) {
-                                Swal.fire('Gagal', xhr.responseJSON?.message ||
+                                confirmPopup('Gagal', xhr.responseJSON?.message ||
                                     'Terjadi kesalahan', 'error');
                             }
                         });
@@ -947,7 +990,7 @@
                 const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
                 const year = viewDate.getFullYear();
 
-                Swal.fire({
+                confirmPopup({
                     title: 'Reset Jadwal Pegawai?',
                     text: `Seluruh jadwal kerja pegawai ini pada bulan ${month}/${year} akan dihapus permanen!`,
                     icon: 'warning',
@@ -969,10 +1012,10 @@
                             success: function(response) {
                                 hasChanged = true;
                                 calendar.refetchEvents();
-                                Swal.fire('Berhasil', response.message, 'success');
+                                confirmPopup('Berhasil', response.message, 'success');
                             },
                             error: function(xhr) {
-                                Swal.fire('Gagal', xhr.responseJSON?.message ||
+                                confirmPopup('Gagal', xhr.responseJSON?.message ||
                                     'Terjadi kesalahan', 'error');
                             }
                         });
@@ -997,7 +1040,7 @@
                         hasChanged = true;
                         modalShiftPicker.hide();
                         calendar.refetchEvents();
-                        Swal.fire({
+                        confirmPopup({
                             icon: 'success',
                             title: 'Berhasil',
                             text: response.message,
@@ -1006,7 +1049,7 @@
                         });
                     },
                     error: function(xhr) {
-                        Swal.fire({
+                        confirmPopup({
                             icon: 'error',
                             title: 'Gagal',
                             text: 'Terjadi kesalahan saat menyimpan jadwal.'
@@ -1017,7 +1060,7 @@
 ;
 
             $('.btn-delete-shift').on('click', function() {
-                Swal.fire({
+                confirmPopup({
                     title: 'Hapus Jadwal?',
                     text: "Jadwal pada tanggal ini akan dihapus.",
                     icon: 'warning',
@@ -1040,7 +1083,7 @@
                                 hasChanged = true;
                                 modalShiftPicker.hide();
                                 calendar.refetchEvents();
-                                Swal.fire({
+                                confirmPopup({
                                     icon: 'success',
                                     title: 'Terhapus',
                                     text: response.message,
