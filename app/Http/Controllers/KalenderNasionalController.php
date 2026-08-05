@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KalenderNasional;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class KalenderNasionalController extends Controller
 {
@@ -48,6 +49,8 @@ class KalenderNasionalController extends Controller
             'status_aktif'    => $request->boolean('status_aktif', true),
         ]);
 
+        $this->clearHolidayCache($request->tanggal);
+
         return redirect()->route('kalender-nasional.index', ['tahun' => date('Y', strtotime($request->tanggal))])
             ->with('success', 'Hari libur berhasil ditambahkan.');
     }
@@ -70,6 +73,8 @@ class KalenderNasionalController extends Controller
             'status_aktif'    => $request->boolean('status_aktif', true),
         ]);
 
+        $this->clearHolidayCache($kalenderNasional->tanggal);
+
         return redirect()->back()->with('success', 'Data berhasil diperbarui.');
     }
 
@@ -78,7 +83,9 @@ class KalenderNasionalController extends Controller
      */
     public function destroy(KalenderNasional $kalenderNasional)
     {
+        $tanggal = $kalenderNasional->tanggal;
         $kalenderNasional->delete();
+        $this->clearHolidayCache($tanggal);
         return redirect()->back()->with('success', 'Hari libur berhasil dihapus.');
     }
 
@@ -88,7 +95,17 @@ class KalenderNasionalController extends Controller
     public function toggleStatus(KalenderNasional $kalenderNasional)
     {
         $kalenderNasional->update(['status_aktif' => !$kalenderNasional->status_aktif]);
+        $this->clearHolidayCache($kalenderNasional->tanggal);
         return response()->json(['success' => true, 'status' => $kalenderNasional->status_aktif]);
+    }
+
+    /**
+     * Forget the cached holiday data for the month of the given date.
+     */
+    private function clearHolidayCache($tanggal): void
+    {
+        $d = $tanggal instanceof Carbon ? $tanggal : Carbon::parse($tanggal);
+        Cache::forget("dashboard:holidays:{$d->year}-{$d->month}");
     }
 
     /**

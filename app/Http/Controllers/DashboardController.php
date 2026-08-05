@@ -30,12 +30,13 @@ class DashboardController extends Controller
         $queryPegawai = Pegawai::query();
         $queryRuangan = Ruangan::query();
         
-        // Base query for Cuti (Checking category OR keywords to handle existing data)
-        $baseCutiQuery = JadwalPegawai::whereHas('shift', function($q) {
-                $q->where('kategori_jadwal', 'cuti')
-                  ->orWhere('nama_shift', 'like', '%cuti%')
-                  ->orWhere('kode_shift', 'like', '%cuti%');
-            });
+        // Base query for Cuti (pre-resolve shift IDs once instead of a correlated subquery)
+        $cutiShiftIds = Shift::where('kategori_jadwal', 'cuti')
+            ->orWhere('nama_shift', 'like', '%cuti%')
+            ->orWhere('kode_shift', 'like', '%cuti%')
+            ->pluck('id');
+
+        $baseCutiQuery = JadwalPegawai::whereIn('shift_id', $cutiShiftIds);
 
         $ruanganIds = collect();
         if ($user->hasRole('kepala_ruangan') && $user->pegawai_id) {
@@ -55,17 +56,24 @@ class DashboardController extends Controller
             }
         }
 
-        // Specific counts (Counting unique employees)
-        $totalCutiHariIni = (clone $baseCutiQuery)
-            ->whereDate('tanggal_masuk', $today->format('Y-m-d'))
-            ->distinct()
-            ->count('pegawai_id');
-            
-        $totalCutiBulanIni = (clone $baseCutiQuery)
-            ->whereMonth('tanggal_masuk', $month)
-            ->whereYear('tanggal_masuk', $year)
-            ->distinct()
-            ->count('pegawai_id');
+        // Specific counts (Counting unique employees) — single aggregate query
+        $monthStart     = $today->copy()->startOfMonth();
+        $nextMonthStart = $monthStart->copy()->addMonth();
+        $cutiStats = (clone $baseCutiQuery)
+            ->selectRaw(
+                'COUNT(DISTINCT CASE WHEN tanggal_masuk >= ? AND tanggal_masuk < ? THEN pegawai_id END) as hari_ini, '
+                    . 'COUNT(DISTINCT CASE WHEN tanggal_masuk >= ? AND tanggal_masuk < ? THEN pegawai_id END) as bulan_ini',
+                [
+                    $today->format('Y-m-d'),
+                    $today->copy()->addDay()->format('Y-m-d'),
+                    $monthStart->format('Y-m-d'),
+                    $nextMonthStart->format('Y-m-d'),
+                ]
+            )
+            ->first();
+
+        $totalCutiHariIni  = (int) ($cutiStats->hari_ini ?? 0);
+        $totalCutiBulanIni = (int) ($cutiStats->bulan_ini ?? 0);
 
         // --- Pegawai Hari Ini (kategorisasi per pegawai) ---
         $pegawaiPerRuangan = [];
@@ -235,6 +243,17 @@ class DashboardController extends Controller
             'pegawai_belum_lengkap' => 0,
         ];
 
+        // Single aggregate query instead of one COUNT per employee (N+1 fix)
+        $pegawaiIds = $allRuangan->flatMap(fn ($r) => $r->pegawai->pluck('id'))->all();
+        $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+        $nextMonthStart = $monthStart->copy()->addMonth();
+        $jadwalCounts = JadwalPegawai::whereIn('pegawai_id', $pegawaiIds)
+            ->where('tanggal_masuk', '>=', $monthStart->format('Y-m-d'))
+            ->where('tanggal_masuk', '<', $nextMonthStart->format('Y-m-d'))
+            ->groupBy('pegawai_id')
+            ->selectRaw('pegawai_id, COUNT(*) as total')
+            ->pluck('total', 'pegawai_id');
+
         foreach ($allRuangan as $ruangan) {
             $totalPegawai = $ruangan->pegawai->count();
             if ($totalPegawai == 0) continue;
@@ -253,10 +272,7 @@ class DashboardController extends Controller
                 // Required days: non-shift only needs to fill working days
                 $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;
 
-                $countJadwal = JadwalPegawai::where('pegawai_id', $pegawai->id)
-                    ->whereMonth('tanggal_masuk', $month)
-                    ->whereYear('tanggal_masuk', $year)
-                    ->count();
+                $countJadwal = (int) ($jadwalCounts[$pegawai->id] ?? 0);
 
                 // Accumulate for room-level percentage
                 $totalRequiredSlots += $requiredDays;
@@ -338,19 +354,25 @@ class DashboardController extends Controller
         $offCount    = count($offDayNumbers);
         $workingDays = $daysInMonth - $offCount;
 
+        // Single query for all employees in the room (N+1 fix)
+        $pegawaiIds = $ruangan->pegawai->pluck('id')->all();
+        $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+        $nextMonthStart = $monthStart->copy()->addMonth();
+        $jadwalByPegawai = JadwalPegawai::whereIn('pegawai_id', $pegawaiIds)
+            ->where('tanggal_masuk', '>=', $monthStart->format('Y-m-d'))
+            ->where('tanggal_masuk', '<', $nextMonthStart->format('Y-m-d'))
+            ->select('pegawai_id', 'tanggal_masuk')
+            ->get()
+            ->groupBy('pegawai_id')
+            ->map(fn ($rows) => $rows->map(fn ($r) => (int) Carbon::parse($r->tanggal_masuk)->format('j'))->unique()->all());
+
         foreach ($ruangan->pegawai as $pegawai) {
             $isNonShift = ($pegawai->kategori_kerja === 'non_shift' || $pegawai->kategori_kerja === 'non_shift_5_hari');
 
             // Required days: non-shift only needs to fill working days
             $requiredDays = $isNonShift ? max($workingDays, 0) : $daysInMonth;
 
-            $jadwal = JadwalPegawai::where('pegawai_id', $pegawai->id)
-                ->whereMonth('tanggal_masuk', $month)
-                ->whereYear('tanggal_masuk', $year)
-                ->pluck('tanggal_masuk')
-                ->map(fn($date) => (int) Carbon::parse($date)->format('j'))
-                ->unique()
-                ->toArray();
+            $jadwal = $jadwalByPegawai[$pegawai->id] ?? [];
 
             $dayStatus = [];
             for ($i = 1; $i <= $daysInMonth; $i++) {
@@ -460,41 +482,45 @@ class DashboardController extends Controller
      */
     private function getHolidaysAndOffDays(int $month, int $year, int $daysInMonth): array
     {
-        // Get holidays from DB
-        $dbHolidays = KalenderNasional::aktif()
-            ->whereMonth('tanggal', $month)
-            ->whereYear('tanggal', $year)
-            ->get();
+        $cacheKey = "dashboard:holidays:{$year}-{$month}";
 
-        $offDays      = [];
-        $holidayNames = [];
-        $holidayColors = [];
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($month, $year, $daysInMonth) {
+            // Get holidays from DB
+            $dbHolidays = KalenderNasional::aktif()
+                ->whereMonth('tanggal', $month)
+                ->whereYear('tanggal', $year)
+                ->get();
 
-        for ($i = 1; $i <= $daysInMonth; $i++) {
-            $date = Carbon::create($year, $month, $i);
+            $offDays      = [];
+            $holidayNames = [];
+            $holidayColors = [];
 
-            // Sunday
-            if ($date->dayOfWeek === Carbon::SUNDAY) {
-                $offDays[]      = $i;
-                $holidayNames[$i] = 'Minggu';
-                $holidayColors[$i] = '#dc3545';
-                continue;
+            for ($i = 1; $i <= $daysInMonth; $i++) {
+                $date = Carbon::create($year, $month, $i);
+
+                // Sunday
+                if ($date->dayOfWeek === Carbon::SUNDAY) {
+                    $offDays[]      = $i;
+                    $holidayNames[$i] = 'Minggu';
+                    $holidayColors[$i] = '#dc3545';
+                    continue;
+                }
+
+                // Check DB holiday
+                $h = $dbHolidays->first(fn($item) => $item->tanggal->day === $i);
+                if ($h) {
+                    $offDays[]        = $i;
+                    $holidayNames[$i] = $h->nama_hari_libur;
+                    $holidayColors[$i] = $h->jenis === 'cuti_bersama' ? '#ffc107' : '#dc3545';
+                }
             }
 
-            // Check DB holiday
-            $h = $dbHolidays->first(fn($item) => $item->tanggal->day === $i);
-            if ($h) {
-                $offDays[]        = $i;
-                $holidayNames[$i] = $h->nama_hari_libur;
-                $holidayColors[$i] = $h->jenis === 'cuti_bersama' ? '#ffc107' : '#dc3545';
-            }
-        }
-
-        return [
-            'off_days'      => $offDays,
-            'holiday_names' => $holidayNames,
-            'holiday_colors' => $holidayColors,
-        ];
+            return [
+                'off_days'      => $offDays,
+                'holiday_names' => $holidayNames,
+                'holiday_colors' => $holidayColors,
+            ];
+        });
     }
 
 }
