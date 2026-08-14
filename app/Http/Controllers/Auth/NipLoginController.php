@@ -26,13 +26,21 @@ class NipLoginController extends Controller
         $password = $request->password;
         $ip = $request->ip();
 
+        $matchedBy = null;
+
         if (Auth::attempt(['nip' => $nip, 'password' => $password], $request->boolean('remember'))) {
+            $matchedBy = 'nip';
+        } elseif (Auth::attempt(['username' => $nip, 'password' => $password], $request->boolean('remember'))) {
+            $matchedBy = 'username';
+        }
+
+        if ($matchedBy) {
             $request->session()->regenerate();
             $user = Auth::user();
 
             Log::channel('login')->info('Login NIP berhasil', [
                 'nip_input' => $nip,
-                'matched_by' => 'nip',
+                'matched_by' => $matchedBy,
                 'ip' => $ip,
                 'user_id' => $user->id,
             ]);

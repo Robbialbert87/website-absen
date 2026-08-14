@@ -32,12 +32,22 @@ class LoginRequest extends FormRequest
         $ip = $this->ip();
         $nip = $this->nip;
 
-        $success = Auth::attempt(['nip' => $nip, 'password' => $this->password], $this->boolean('remember'));
+        $success = false;
+        $matchedBy = null;
+
+        if (Auth::attempt(['nip' => $nip, 'password' => $this->password], $this->boolean('remember'))) {
+            $success = true;
+            $matchedBy = 'nip';
+        } elseif (Auth::attempt(['username' => $nip, 'password' => $this->password], $this->boolean('remember'))) {
+            $success = true;
+            $matchedBy = 'username';
+        }
 
         if ($success) {
             RateLimiter::clear($this->throttleKey());
             Log::channel('login')->info('Login NIP berhasil', [
                 'nip' => $nip,
+                'matched_by' => $matchedBy,
                 'ip' => $ip,
                 'user_id' => Auth::id(),
             ]);
