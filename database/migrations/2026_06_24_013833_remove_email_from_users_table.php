@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('users', 'email')) {
+            Schema::dropIfExists('password_reset_tokens');
+            return;
+        }
+
         $driver = Schema::getConnection()->getDriverName();
 
         if ($driver === 'sqlite') {

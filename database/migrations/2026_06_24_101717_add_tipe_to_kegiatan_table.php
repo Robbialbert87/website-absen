@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('kegiatan', 'tipe')) {
+            return;
+        }
+
         Schema::table('kegiatan', function (Blueprint $table) {
             $table->enum('tipe', ['apel', 'kegiatan'])->default('kegiatan')->after('status');
         });
