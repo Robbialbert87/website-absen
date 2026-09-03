@@ -15,12 +15,57 @@ use App\Exports\JadwalPegawaiExport;
 
 class JadwalPegawaiController extends Controller
 {
+    private function terkunciTarget($bulan, $tahun): bool
+    {
+        if (auth()->user()->isAdmin()) {
+            return false;
+        }
+
+        $ini = now();
+
+        if ((int) $ini->format('d') <= 20) {
+            return true;
+        }
+
+        if ($tahun > $ini->year) {
+            return false;
+        }
+
+        if ($tahun < $ini->year) {
+            return true;
+        }
+
+        return $bulan <= $ini->month;
+    }
+
+    private function pesanTerkunci(): string
+    {
+        return 'Tidak dapat mengatur jadwal bulan ini. Jadwal hanya dapat diubah mulai tanggal 21 untuk bulan berikutnya.';
+    }
+
+    private function abortTerkunci(bool $json = true)
+    {
+        if ($json) {
+            return response()->json(['success' => false, 'message' => $this->pesanTerkunci()], 403);
+        }
+
+        return back()->with('error', $this->pesanTerkunci());
+    }
+
     public function index(Request $request)
     {
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
 
         $user = auth()->user();
+        $ini = now();
+        $jadwalInfo = [
+            'is_admin'       => $user->isAdmin(),
+            'hari_ini'       => (int) $ini->format('d'),
+            'bulan_berjalan' => (int) $ini->month,
+            'tahun_berjalan' => (int) $ini->year,
+            'terkunci'       => $this->terkunciTarget((int) $bulan, (int) $tahun),
+        ];
         $query = Ruangan::query();
 
         if (! $user->hasRole('admin') && ! $user->hasRole('super_admin')) {
@@ -99,7 +144,7 @@ class JadwalPegawaiController extends Controller
                 return $item->tanggal->format('j');
             });
 
-        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search', 'kategori_kerja', 'holidays'));
+        return view('jadwal.index', compact('ruangans', 'selected_ruangan_id', 'pegawais', 'shifts', 'bulan', 'tahun', 'dates', 'jadwal', 'search', 'kategori_kerja', 'holidays', 'jadwalInfo'));
     }
 
     public function getEvents(Request $request, $pegawai_id)
@@ -145,6 +190,11 @@ class JadwalPegawaiController extends Controller
             'tanggal' => 'required|date',
         ]);
 
+        $tanggalTarget = Carbon::parse($request->tanggal);
+        if ($this->terkunciTarget($tanggalTarget->month, $tanggalTarget->year)) {
+            return $this->abortTerkunci(true);
+        }
+
         $pegawai = Pegawai::findOrFail($request->pegawai_id);
         $shift = Shift::findOrFail($request->shift_id);
 
@@ -182,6 +232,11 @@ class JadwalPegawaiController extends Controller
             'tanggal' => 'required|date',
         ]);
 
+        $tanggalTarget = Carbon::parse($request->tanggal);
+        if ($this->terkunciTarget($tanggalTarget->month, $tanggalTarget->year)) {
+            return $this->abortTerkunci(true);
+        }
+
         JadwalPegawai::where('pegawai_id', $request->pegawai_id)
             ->where('tanggal_masuk', $request->tanggal)
             ->delete();
@@ -204,6 +259,10 @@ class JadwalPegawaiController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         $kategori = $request->kategori ?: 'non_shift';
+
+        if ($this->terkunciTarget((int) $bulan, (int) $tahun)) {
+            return $this->abortTerkunci(true);
+        }
 
         // Permission check
         if (!$user->isAdmin() && !$user->hasRole('super_admin')) {
@@ -380,6 +439,10 @@ class JadwalPegawaiController extends Controller
             'tahun' => 'required',
         ]);
 
+        if ($this->terkunciTarget((int) $request->bulan, (int) $request->tahun)) {
+            return $this->abortTerkunci(true);
+        }
+
         $query = JadwalPegawai::whereMonth('tanggal_masuk', $request->bulan)
             ->whereYear('tanggal_masuk', $request->tahun);
 
@@ -453,6 +516,8 @@ class JadwalPegawaiController extends Controller
         $tahun = $request->get('tahun', date('Y'));
         $ruangan_id = $request->get('ruangan_id');
 
+        $jadwalTerkunci = $this->terkunciTarget((int) $bulan, (int) $tahun);
+
         $dates = [];
         $pegawais = [];
         $jadwal_existing = [];
@@ -507,7 +572,7 @@ class JadwalPegawaiController extends Controller
                 return $item->tanggal->format('j');
             });
 
-        return view('jadwal.create', compact('ruangans', 'shifts', 'bulan', 'tahun', 'ruangan_id', 'dates', 'pegawais', 'jadwal_existing', 'prefillShiftByDay', 'holidays'));
+        return view('jadwal.create', compact('ruangans', 'shifts', 'bulan', 'tahun', 'ruangan_id', 'dates', 'pegawais', 'jadwal_existing', 'prefillShiftByDay', 'holidays', 'jadwalTerkunci'));
     }
 
     public function store(Request $request)
@@ -522,6 +587,10 @@ class JadwalPegawaiController extends Controller
         $ruangan_id = $request->ruangan_id;
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+
+        if ($this->terkunciTarget((int) $bulan, (int) $tahun)) {
+            return $this->abortTerkunci(false);
+        }
 
         DB::beginTransaction();
         try {

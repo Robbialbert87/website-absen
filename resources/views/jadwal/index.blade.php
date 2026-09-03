@@ -13,6 +13,25 @@
         </div>
     </div>
 
+    @if (!$jadwalInfo['is_admin'])
+        @if ($jadwalInfo['terkunci'])
+            <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-2">
+                <i class="fas fa-lock"></i>
+                <div>
+                    <strong>Periode pengaturan jadwal tertutup.</strong>
+                    Jadwal bulan ini tidak dapat diubah. Pengaturan jadwal untuk bulan berikutnya dapat dilakukan mulai tanggal 21.
+                </div>
+            </div>
+        @else
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-2">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    Jadwal untuk bulan ini dapat diubah. Jadwal bulan berjalan &amp; bulan sebelumnya tetap terkunci.
+                </div>
+            </div>
+        @endif
+    @endif
+
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-body">
             <form action="{{ route('jadwal.index') }}" method="GET" class="row g-3 align-items-end">
@@ -545,6 +564,34 @@
 
 @push('scripts')
     <script>
+        const JADWAL_INFO = @json($jadwalInfo);
+        const JADWAL_PESAN_TERKUNCI = "Tidak dapat mengatur jadwal bulan ini. Jadwal hanya dapat diubah mulai tanggal 21 untuk bulan berikutnya.";
+
+        function isJadwalTerkunci(month, year) {
+            if (JADWAL_INFO.is_admin) {
+                return false;
+            }
+            const hariIni = JADWAL_INFO.hari_ini;
+            if (hariIni <= 20) {
+                return true;
+            }
+            if (year > JADWAL_INFO.tahun_berjalan) {
+                return false;
+            }
+            if (year < JADWAL_INFO.tahun_berjalan) {
+                return true;
+            }
+            return month <= JADWAL_INFO.bulan_berjalan;
+        }
+
+        function alertJadwalTerkunci() {
+            return confirmPopup({
+                icon: 'error',
+                title: 'Tidak Dapat Mengatur Jadwal',
+                text: JADWAL_PESAN_TERKUNCI
+            });
+        }
+
         function loadScript(url) {
             return new Promise((resolve, reject) => {
                 const s = document.createElement('script');
@@ -807,6 +854,12 @@
                     }
                 },
                 dateClick: function(info) {
+                    const clicked = new Date(info.date);
+                    if (isJadwalTerkunci(clicked.getMonth() + 1, clicked.getFullYear())) {
+                        alertJadwalTerkunci();
+                        return;
+                    }
+
                     currentSelectedDate = info.dateStr;
                     $('#pickerDateDisplay').text(new Date(info.date).toLocaleDateString('id-ID', {
                         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -838,6 +891,12 @@
                     // Ignore clicks on holiday background events
                     if (info.event.extendedProps.is_holiday) return;
 
+                    const clicked = new Date(info.event.extendedProps.tanggal_masuk);
+                    if (isJadwalTerkunci(clicked.getMonth() + 1, clicked.getFullYear())) {
+                        alertJadwalTerkunci();
+                        return;
+                    }
+
                     currentSelectedDate = info.event.extendedProps.tanggal_masuk;
                     $('#pickerDateDisplay').text(new Date(currentSelectedDate).toLocaleDateString('id-ID', {
                         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -855,6 +914,11 @@
                 const viewDate = calendar.getDate();
                 const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
                 const year = viewDate.getFullYear();
+
+                if (isJadwalTerkunci(parseInt(month, 10), year)) {
+                    alertJadwalTerkunci();
+                    return;
+                }
 
                 confirmPopup({
                     title: 'Auto Input Jadwal?',
@@ -990,6 +1054,11 @@
                 const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
                 const year = viewDate.getFullYear();
 
+                if (isJadwalTerkunci(parseInt(month, 10), year)) {
+                    alertJadwalTerkunci();
+                    return;
+                }
+
                 confirmPopup({
                     title: 'Reset Jadwal Pegawai?',
                     text: `Seluruh jadwal kerja pegawai ini pada bulan ${month}/${year} akan dihapus permanen!`,
@@ -1027,6 +1096,11 @@
             });
 
             function selectShift(shiftId) {
+                const t = new Date(currentSelectedDate);
+                if (isJadwalTerkunci(t.getMonth() + 1, t.getFullYear())) {
+                    alertJadwalTerkunci();
+                    return;
+                }
                 $.ajax({
                     url: '{{ route('jadwal.save-single') }}',
                     method: 'POST',
@@ -1060,6 +1134,11 @@
 ;
 
             $('.btn-delete-shift').on('click', function() {
+                const del = new Date(currentSelectedDate);
+                if (isJadwalTerkunci(del.getMonth() + 1, del.getFullYear())) {
+                    alertJadwalTerkunci();
+                    return;
+                }
                 confirmPopup({
                     title: 'Hapus Jadwal?',
                     text: "Jadwal pada tanggal ini akan dihapus.",

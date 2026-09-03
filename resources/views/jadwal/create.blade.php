@@ -14,6 +14,16 @@
     </div>
 </div>
 
+@if($jadwalTerkunci && !auth()->user()->isAdmin())
+    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-2">
+        <i class="fas fa-lock"></i>
+        <div>
+            <strong>Periode pengaturan jadwal tertutup.</strong>
+            Jadwal bulan berjalan &amp; bulan sebelumnya tidak dapat diubah. Pengaturan untuk bulan berikutnya dapat dilakukan mulai tanggal 21.
+        </div>
+    </div>
+@endif
+
 <div class="card mb-4">
     <div class="card-body">
         <form action="{{ route('jadwal.create') }}" method="GET" class="row g-3 align-items-end">
@@ -64,10 +74,10 @@
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-bold"><i class="fas fa-th me-2 text-primary"></i> Matrix Penjadwalan</h6>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-danger btn-sm px-3" id="btnReset">
+                <button type="button" class="btn btn-outline-danger btn-sm px-3" id="btnReset" {{ $jadwalTerkunci ? 'disabled' : '' }}>
                     <i class="fas fa-trash-alt me-2"></i> Reset Jadwal
                 </button>
-                <button type="submit" class="btn btn-success btn-sm px-4">
+                <button type="submit" class="btn btn-success btn-sm px-4" {{ $jadwalTerkunci ? 'disabled' : '' }}>
                     <i class="fas fa-save me-2"></i> Simpan Jadwal
                 </button>
             </div>
@@ -187,10 +197,10 @@
             </table>
         </div>
         <div class="card-footer bg-white text-end d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-outline-danger px-4" id="btnResetFooter">
+            <button type="button" class="btn btn-outline-danger px-4" id="btnResetFooter" {{ $jadwalTerkunci ? 'disabled' : '' }}>
                 <i class="fas fa-trash-alt me-2"></i> Reset Jadwal
             </button>
-            <button type="submit" class="btn btn-success px-5">
+            <button type="submit" class="btn btn-success px-5" {{ $jadwalTerkunci ? 'disabled' : '' }}>
                 <i class="fas fa-save me-2"></i> Simpan Semua Jadwal
             </button>
         </div>
