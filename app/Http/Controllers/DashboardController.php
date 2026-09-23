@@ -91,10 +91,12 @@ class DashboardController extends Controller
 
             $allPegawai = $pegawaiQuery->get();
         
-        // Get today's jadwal keyed by pegawai_id
+        // Get today's jadwal keyed by pegawai_id.
+        // Hanya jadwal yang TANGGAL MASUKNYA hari ini (pegawai yang benar-benar
+        // mulai kerja hari ini). Pegawai shift malam yang mulai kemarin dan baru
+        // pulang pagi ini TIDAK dihitung sebagai "masuk" hari ini.
         $jadwalToday = JadwalPegawai::whereIn('pegawai_id', $allPegawai->pluck('id'))
-            ->whereDate('tanggal_masuk', '<=', $today)
-            ->whereDate('tanggal_pulang', '>=', $today)
+            ->whereDate('tanggal_masuk', $today)
             ->with('shift')
             ->get()
             ->groupBy('pegawai_id');

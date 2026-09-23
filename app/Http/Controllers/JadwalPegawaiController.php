@@ -161,11 +161,17 @@ class JadwalPegawaiController extends Controller
             ->get();
 
         $events = $jadwals->map(function ($j) {
+            // Shift yang melewati tengah malam (mis. shift malam pulang keesokan hari)
+            $crossMidnight = $j->tanggal_pulang > $j->tanggal_masuk;
+
             return [
                 'id' => $j->id,
                 'title' => $j->shift->nama_shift.' ('.substr($j->jam_masuk, 0, 5).')',
-                'start' => $j->tanggal_masuk.'T'.$j->jam_masuk,
-                'end' => $j->tanggal_pulang.'T'.$j->jam_pulang,
+                // Tampilan: shift melewati tengah malam dirender sebagai all-day di tanggal
+                // masuk saja agar tidak membentang ke hari berikutnya (end all-day eksklusif).
+                'start' => $crossMidnight ? $j->tanggal_masuk : $j->tanggal_masuk.'T'.$j->jam_masuk,
+                'end' => $crossMidnight ? $j->tanggal_pulang : $j->tanggal_pulang.'T'.$j->jam_pulang,
+                'allDay' => $crossMidnight,
                 'backgroundColor' => $j->shift->warna,
                 'borderColor' => $j->shift->warna,
                 'textColor' => '#fff',
@@ -175,6 +181,7 @@ class JadwalPegawaiController extends Controller
                     'jam_masuk' => $j->jam_masuk,
                     'jam_pulang' => $j->jam_pulang,
                     'tanggal_masuk' => $j->tanggal_masuk,
+                    'tanggal_pulang' => $j->tanggal_pulang,
                 ],
             ];
         });
